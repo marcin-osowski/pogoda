@@ -26,6 +26,20 @@ def get_latest_reading(db, name):
     (value, datetime) = results
     return value, datetime
 
+def get_last_readings(db, name, timedelta):
+    """Returns values and timestamps of recent readings."""
+    minimum_time = datetime.datetime.utcnow() - timedelta
+    minimum_time = minimum_time.isoformat(" ")
+    cur = db.cursor()
+    results = cur.execute("""
+        SELECT value, datetime
+        FROM readings
+        WHERE name = ?
+            AND datetime >= ?
+        ORDER BY datetime ASC
+    """, (name, minimum_time))
+    return results.fetchall()
+
 def string_date_to_seconds_ago(str_date):
     if str_date is None:
         return "unknown"
@@ -48,6 +62,18 @@ def root(db):
         data_age=data_age,
     ))
 
-@app.get('/static/<filepath:path>')
+@app.get("/charts")
+def route_charts(db):
+    temp_history = get_last_readings(db, "temperature", datetime.timedelta(days=1))
+    hmdt_history = get_last_readings(db, "humidity", datetime.timedelta(days=1))
+
+    print temp_history
+
+    return bottle.template("charts.tpl", dict(
+        temp_history=temp_history,
+        hmdt_history=hmdt_history,
+    ))
+
+@app.get("/static/<filepath:path>")
 def route_static(filepath):
-        return bottle.static_file(filepath, root='staticdata/')
+        return bottle.static_file(filepath, root="staticdata/")

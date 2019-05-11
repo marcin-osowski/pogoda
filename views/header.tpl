@@ -13,6 +13,7 @@
     <nav>
       <ul>
         <li><a href="/">Current reading</a>
+        <li><a href="/charts">Charts</a>
       </ul>
     </nav>
   </header>
