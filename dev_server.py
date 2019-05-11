@@ -1,0 +1,16 @@
+#!/usr/bin/env python
+
+import bottle
+import config
+import app
+
+config.DEV_MODE=True
+
+bottle.run(
+    app.app,
+    host=config.HTTP_HOST,
+    port=config.HTTP_PORT,
+    debug=config.DEV_MODE,
+    reloader=config.DEV_MODE,
+)
+

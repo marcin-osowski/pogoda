@@ -6,14 +6,13 @@ import threading
 import time
 import traceback
 
-COMM_PORT="/dev/ttyUSB0"
-MAX_DATA_DELAY_SEC=60
+import config
 
 
 class LastValueRead(object):
     """Thread safe. Returns the last value read.
 
-    If data is older than MAX_DATA_DELAY_SEC then returns None.
+    If data is older than config.MAX_DATA_DELAY_SEC then returns None.
     """
 
     def __init__(self):
@@ -32,7 +31,7 @@ class LastValueRead(object):
                 # No data available.
                 return None
             latency = datetime.datetime.now() - self._timestamp
-            if latency > datetime.timedelta(seconds=MAX_DATA_DELAY_SEC):
+            if latency > datetime.timedelta(seconds=config.MAX_DATA_DELAY_SEC):
                 # Data too old.
                 return None
             return self._value
@@ -52,14 +51,14 @@ class WeatherDataSource(object):
             try:
                 self._stream_reader()
             except:
-                print "Problem while reading %s" % COMM_PORT
+                print "Problem while reading %s" % config.COMM_PORT
                 traceback.print_exc()
                 time.sleep(5.0)
 
     def _stream_reader(self):
-        print "Opening %s" % COMM_PORT
-        stream = io.open(COMM_PORT, mode='rt', buffering=1, errors='replace')
-        print "Opened %s" % COMM_PORT
+        print "Opening %s" % config.COMM_PORT
+        stream = io.open(config.COMM_PORT, mode='rt', buffering=1, errors='replace')
+        print "Opened %s" % config.COMM_PORT
         while not stream.closed:
             line = stream.next().strip()
             if not line:
