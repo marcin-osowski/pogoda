@@ -21,20 +21,27 @@ class LastValueRead(object):
         self._timestamp = None
 
     def set(self, value):
+        """Sets the currently held value."""
         with self._lock:
             self._value = value
             self._timestamp = datetime.datetime.now()
 
     def get(self):
+        """Returns the currently held value, or None."""
+        value, _ = self.get_with_timestamp()
+        return value
+
+    def get_with_timestamp(self):
+        """Returns the currently held value with timestamp, or None."""
         with self._lock:
             if self._value is None:
                 # No data available.
-                return None
+                return None, None
             latency = datetime.datetime.now() - self._timestamp
             if latency > datetime.timedelta(seconds=config.MAX_DATA_DELAY_SEC):
                 # Data too old.
-                return None
-            return self._value
+                return None, None
+            return self._value, self._timestamp
 
 
 class WeatherDataSource(object):
