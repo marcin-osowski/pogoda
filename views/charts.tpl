@@ -48,11 +48,11 @@
 
 <section id="pageContent">
   <article>
-    <div id="temp_chart" style="width: 900px; height: 500px"></div>
+    <div id="temp_chart" style="width: 100%; min-height: 450px"></div>
   </article>
 
   <article>
-    <div id="hmdt_chart" style="width: 900px; height: 500px"></div>
+    <div id="hmdt_chart" style="width: 100%; min-height: 450px"></div>
   </article>
 </section>
 
