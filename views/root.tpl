@@ -6,13 +6,13 @@
 
 <section id="pageContent">
   <article>
-    <p>Temperature: {{ temp }} °C </p>
+    <table>
+      <tr><td>Temperature:</td><td>{{ temp }} °C</td></tr>
+      <tr><td>Humidity:</td><td>{{ hmdt }} %</td></tr>
+    </table>
     <p>&nbsp;</p>
-    <p>Humidity: {{ hmdt }} % </p>
     <p>&nbsp;</p>
-    <p>&nbsp;</p>
-    <p>&nbsp;</p>
-    <p>Data collected {{ "%.0f" % data_age }} seconds ago.</p>
+    <p>Oldest data: {{ "%.0f" % data_age }} seconds ago.</p>
   </article>
 </section>
 
