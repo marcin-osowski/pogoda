@@ -40,22 +40,38 @@ class LastValueRead(object):
 class WeatherDataSource(object):
     """Retrieves from device and stores all recent weather data. Singleton."""
 
-    def __init__(self):
-        self.temperature = LastValueRead()
-        self.humidity = LastValueRead()
-        self.reader_thread = threading.Thread(target=self._reader_loop)
-        self.reader_thread.start()
+    # The available readings.
+    temperature = LastValueRead()
+    humidity = LastValueRead()
 
-    def _reader_loop(self):
+    # Reader thread spawn lock
+    _lock = threading.Lock()
+
+    @staticmethod
+    def Start():
+        """Starts the underlying reader thread (never terminates)."""
+        with WeatherDataSource._lock:
+            if hasattr(WeatherDataSource, "_reader_thread"):
+                # Already initialized.
+                return
+            WeatherDataSource._reader_thread = threading.Thread(
+                    target=WeatherDataSource._reader_loop)
+            WeatherDataSource._reader_thread.setDaemon(True)
+            WeatherDataSource._reader_thread.start()
+
+    @staticmethod
+    def _reader_loop():
         while True:
             try:
-                self._stream_reader()
+                WeatherDataSource._stream_reader()
             except:
                 print "Problem while reading %s" % config.COMM_PORT
                 traceback.print_exc()
                 time.sleep(5.0)
+            print "Re-starting data source stream reader."
 
-    def _stream_reader(self):
+    @staticmethod
+    def _stream_reader():
         print "Opening %s" % config.COMM_PORT
         stream = io.open(config.COMM_PORT, mode='rt', buffering=1, errors='replace')
         print "Opened %s" % config.COMM_PORT
@@ -79,7 +95,10 @@ class WeatherDataSource(object):
                 continue
 
             if kind == "Hmdt":
-                self.humidity.set(value)
+                WeatherDataSource.humidity.set(value)
             if kind == "Temp":
-                self.temperature.set(value)
+                WeatherDataSource.temperature.set(value)
             # Unknown data kind, drop.
+
+# Start the thread
+WeatherDataSource.Start()

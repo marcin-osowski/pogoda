@@ -5,7 +5,7 @@ import time
 
 import data_source
 
-weather_data = data_source.WeatherDataSource()
+weather_data = data_source.WeatherDataSource
 app = bottle.Bottle()
 
 @app.get("/")
