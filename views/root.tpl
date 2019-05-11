@@ -12,7 +12,7 @@
     <div id="logo"><img src="/static/logo.png">Weather&nbsp;Station</div>
     <nav>
       <ul>
-        <li><a href="/">Home</a>
+        <li><a href="/">Current reading</a>
       </ul>
     </nav>
   </header>
@@ -23,9 +23,13 @@
 
   <section id="pageContent">
     <article>
-      <p>Temperature: {{ temperature }} °C</p>
+      <p>Temperature: {{ temp }} °C </p>
       <p>&nbsp;</p>
-      <p>Humidity: {{ humidity }} %</p>
+      <p>Humidity: {{ hmdt }} % </p>
+      <p>&nbsp;</p>
+      <p>&nbsp;</p>
+      <p>&nbsp;</p>
+      <p>Data collected {{ "%.0f" % data_age }} seconds ago.</p>
     </article>
    </section>
 

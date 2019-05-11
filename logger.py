@@ -16,7 +16,7 @@ def get_and_insert_data(weather_data):
             return
         if time is None:
             return
-        rows_to_add.append((time.isoformat(), name, value))
+        rows_to_add.append((time.isoformat(" "), name, value))
 
     add_row(weather_data.temperature.get_with_timestamp(), "temperature")
     add_row(weather_data.humidity.get_with_timestamp(), "humidity")

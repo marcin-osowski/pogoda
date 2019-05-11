@@ -24,7 +24,7 @@ class LastValueRead(object):
         """Sets the currently held value."""
         with self._lock:
             self._value = value
-            self._timestamp = datetime.datetime.now()
+            self._timestamp = datetime.datetime.utcnow()
 
     def get(self):
         """Returns the currently held value, or None."""
@@ -37,7 +37,7 @@ class LastValueRead(object):
             if self._value is None:
                 # No data available.
                 return None, None
-            latency = datetime.datetime.now() - self._timestamp
+            latency = datetime.datetime.utcnow() - self._timestamp
             if latency > datetime.timedelta(seconds=config.MAX_DATA_DELAY_SEC):
                 # Data too old.
                 return None, None
