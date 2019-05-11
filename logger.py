@@ -39,4 +39,3 @@ if __name__ == "__main__":
             print "Problem while inserting data"
             traceback.print_exc()
         time.sleep(60.0)
-        print ".",
