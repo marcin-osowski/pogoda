@@ -10,8 +10,8 @@ config.DEV_MODE=True
 bottle.run(
     app.app,
     server='paste',
-    host=config.HTTP_HOST,
-    port=config.HTTP_PORT,
+    host=config.DEV_HTTP_HOST,
+    port=config.DEV_HTTP_PORT,
     debug=config.DEV_MODE,
     reloader=config.DEV_MODE,
 )
