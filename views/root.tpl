@@ -7,29 +7,30 @@
 </head>
 
 <body>
-	<header>
-		<div id="logo"><img src="/static/logo.png">Weather&nbsp;Station</div>
-		<nav>
-			<ul>
-				<li><a href="/">Home</a>
-			</ul>
-		</nav>
-	</header>
-	<section>
-		<strong>Current readings</strong>
-	</section>
-	<section id="pageContent">
-		<main role="main">
-			<article>
-                <ul>
-                    <li> Temp:
-                </ul>
-			</article>
-		</main>
-    </section>
-    <footer>
-        Footer
-    </footer>
+  <header>
+    <div id="logo"><img src="/static/logo.png">Weather&nbsp;Station</div>
+    <nav>
+      <ul>
+        <li><a href="/">Home</a>
+      </ul>
+    </nav>
+  </header>
+
+  <section>
+    <strong>Current readings</strong>
+  </section>
+
+  <section id="pageContent">
+    <article>
+      <p>Temperature: {{ temperature }} °C</p>
+      <p>&nbsp;</p>
+      <p>Humidity: {{ humidity }} %</p>
+    </article>
+   </section>
+
+   <footer>
+      2019, Katarzyna Osowska, Marcin Osowski
+   </footer>
 
 </body>
 </html>

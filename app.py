@@ -13,6 +13,11 @@ def root():
     temperature = weather_data.temperature.get()
     humidity = weather_data.humidity.get()
 
+    return bottle.template("root.tpl", dict(
+        temperature=temperature,
+        humidity=humidity,
+    ))
+
     result = ["Weather station"]
 
     if temperature is not None:
@@ -22,3 +27,6 @@ def root():
 
     return "<br>".join(result)
 
+@app.get('/static/<filepath:path>')
+def route_static(filepath):
+        return bottle.static_file(filepath, root='staticdata/')
