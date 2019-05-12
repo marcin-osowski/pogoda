@@ -43,7 +43,7 @@
 
 
 <section>
-  <strong>Charts</strong>
+  <strong>Charts (smoothed)</strong>
 </section>
 
 <section id="pageContent">

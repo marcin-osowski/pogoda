@@ -40,6 +40,18 @@ def get_last_readings(db, name, timedelta):
     """, (name, minimum_time))
     return results.fetchall()
 
+def apply_moving_average(readings):
+    """Applies a 10-point moving average to the readings."""
+    recent_values = []
+    output_readings = []
+    for value, timestamp in readings:
+        recent_values.append(value)
+        if len(recent_values) > 10:
+            recent_values.pop(0)
+        average = sum(recent_values) / len(recent_values)
+        output_readings.append((average, timestamp))
+    return output_readings
+
 def string_date_to_seconds_ago(str_date):
     if str_date is None:
         return "unknown"
@@ -67,7 +79,8 @@ def route_charts(db):
     temp_history = get_last_readings(db, "temperature", datetime.timedelta(days=1))
     hmdt_history = get_last_readings(db, "humidity", datetime.timedelta(days=1))
 
-    print temp_history
+    temp_history = apply_moving_average(temp_history)
+    hmdt_history = apply_moving_average(hmdt_history)
 
     return bottle.template("charts.tpl", dict(
         temp_history=temp_history,
