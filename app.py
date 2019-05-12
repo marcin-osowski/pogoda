@@ -11,6 +11,9 @@ app = bottle.Bottle()
 sqlite_plugin = bottle.ext.sqlite.Plugin(dbfile=config.SQLITE_DB)
 app.install(sqlite_plugin)
 
+def parse_datetime(str_date):
+    return datetime.datetime.strptime(str_date, "%Y-%m-%d %H:%M:%S.%f")
+
 def get_latest_reading(db, name):
     """Returns the value and timestamp of the latest reading."""
     cur = db.cursor()
@@ -23,7 +26,8 @@ def get_latest_reading(db, name):
     """, (name,)).fetchone()
     if not results:
         return None, None
-    (value, datetime) = results
+    (value, datetime_text) = results
+    datetime = parse_datetime(datetime_text)
     return value, datetime
 
 def get_last_readings(db, name, timedelta):
@@ -38,25 +42,48 @@ def get_last_readings(db, name, timedelta):
             AND datetime >= ?
         ORDER BY datetime ASC
     """, (name, minimum_time))
-    return results.fetchall()
+    parsed_results = []
+    for value, datetime_text in results:
+        parsed_results.append((value, parse_datetime(datetime_text)))
+    return parsed_results
 
-def apply_moving_average(readings):
-    """Applies a 10-point moving average to the readings."""
-    recent_values = []
+def abs_delta_seconds(first, second):
+    delta = (second - first).total_seconds()
+    return abs(delta)
+
+def apply_smoothing(readings):
+    """Applies a +- 5 min average to the readings."""
     output_readings = []
-    for value, timestamp in readings:
-        recent_values.append(value)
-        if len(recent_values) > 10:
-            recent_values.pop(0)
-        average = sum(recent_values) / len(recent_values)
+    for i, (value, timestamp) in enumerate(readings):
+        surround_values = [value]
+
+        fwd_idx = i + 1
+        while fwd_idx < len(readings):
+            fwd_value, fwd_timestamp = readings[fwd_idx]
+            abs_time_delta = abs_delta_seconds(timestamp, fwd_timestamp)
+            if abs_time_delta < 5*60:
+                surround_values.append(fwd_value)
+            else:
+                break
+            fwd_idx += 1
+
+        back_idx = i - 1
+        while back_idx >= 0:
+            back_value, back_timestamp = readings[back_idx]
+            abs_time_delta = abs_delta_seconds(timestamp, back_timestamp)
+            if abs_time_delta < 5*60:
+                surround_values.append(back_value)
+            else:
+                break
+            back_idx -= 1
+
+        average = sum(surround_values) / len(surround_values)
         output_readings.append((average, timestamp))
+
     return output_readings
 
-def string_date_to_seconds_ago(str_date):
-    if str_date is None:
-        return "unknown"
-    parsed_date = datetime.datetime.strptime(str_date, "%Y-%m-%d %H:%M:%S.%f")
-    time_ago = datetime.datetime.utcnow() - parsed_date
+def date_to_seconds_ago(date):
+    time_ago = datetime.datetime.utcnow() - date
     return time_ago.total_seconds()
 
 @app.get("/")
@@ -64,8 +91,8 @@ def root(db):
     temp, temp_date = get_latest_reading(db, "temperature")
     hmdt, hmdt_date = get_latest_reading(db, "humidity")
 
-    temp_ago = string_date_to_seconds_ago(temp_date)
-    hmdt_ago = string_date_to_seconds_ago(hmdt_date)
+    temp_ago = date_to_seconds_ago(temp_date)
+    hmdt_ago = date_to_seconds_ago(hmdt_date)
     data_age = max(temp_ago, hmdt_ago)
 
     return bottle.template("root.tpl", dict(
@@ -79,8 +106,8 @@ def route_charts(db):
     temp_history = get_last_readings(db, "temperature", datetime.timedelta(days=1))
     hmdt_history = get_last_readings(db, "humidity", datetime.timedelta(days=1))
 
-    temp_history = apply_moving_average(temp_history)
-    hmdt_history = apply_moving_average(hmdt_history)
+    temp_history = apply_smoothing(temp_history)
+    hmdt_history = apply_smoothing(hmdt_history)
 
     return bottle.template("charts.tpl", dict(
         temp_history=temp_history,
