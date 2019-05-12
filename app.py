@@ -51,8 +51,8 @@ def abs_delta_seconds(first, second):
     delta = (second - first).total_seconds()
     return abs(delta)
 
-def apply_smoothing(readings):
-    """Applies a +- 5 min average to the readings."""
+def apply_smoothing(readings, minutes):
+    """Applies a +- X min average to the readings."""
     output_readings = []
     for i, (value, timestamp) in enumerate(readings):
         surround_values = [value]
@@ -61,7 +61,7 @@ def apply_smoothing(readings):
         while fwd_idx < len(readings):
             fwd_value, fwd_timestamp = readings[fwd_idx]
             abs_time_delta = abs_delta_seconds(timestamp, fwd_timestamp)
-            if abs_time_delta < 5*60:
+            if abs_time_delta < minutes * 60:
                 surround_values.append(fwd_value)
             else:
                 break
@@ -71,7 +71,7 @@ def apply_smoothing(readings):
         while back_idx >= 0:
             back_value, back_timestamp = readings[back_idx]
             abs_time_delta = abs_delta_seconds(timestamp, back_timestamp)
-            if abs_time_delta < 5*60:
+            if abs_time_delta < minutes * 60:
                 surround_values.append(back_value)
             else:
                 break
@@ -106,8 +106,8 @@ def route_charts(db):
     temp_history = get_last_readings(db, "temperature", datetime.timedelta(days=1))
     hmdt_history = get_last_readings(db, "humidity", datetime.timedelta(days=1))
 
-    temp_history = apply_smoothing(temp_history)
-    hmdt_history = apply_smoothing(hmdt_history)
+    temp_history = apply_smoothing(temp_history, minutes=5.0)
+    hmdt_history = apply_smoothing(hmdt_history, minutes=20.0)
 
     return bottle.template("charts.tpl", dict(
         temp_history=temp_history,
