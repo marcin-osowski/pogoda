@@ -38,4 +38,4 @@ if __name__ == "__main__":
         except:
             print "Problem while inserting data"
             traceback.print_exc()
-        time.sleep(60.0)
+        time.sleep(config.LOGGER_INTERVAL_SEC)
