@@ -2,7 +2,6 @@
 
 from google.cloud import datastore
 import os
-import sqlite3
 import time
 import traceback
 
