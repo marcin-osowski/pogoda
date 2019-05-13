@@ -105,13 +105,16 @@ def root(db):
 def route_charts(db):
     temp_history = get_last_readings(db, "temperature", datetime.timedelta(days=1))
     hmdt_history = get_last_readings(db, "humidity", datetime.timedelta(days=1))
+    water_history = get_last_readings(db, "water_level", datetime.timedelta(days=1))
 
     temp_history = apply_smoothing(temp_history, minutes=5.0)
     hmdt_history = apply_smoothing(hmdt_history, minutes=20.0)
+    water_history = apply_smoothing(water_history, minutes=20.0)
 
     return bottle.template("charts.tpl", dict(
         temp_history=temp_history,
         hmdt_history=hmdt_history,
+        water_history=water_history,
     ))
 
 @app.get("/static/<filepath:path>")

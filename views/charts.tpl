@@ -8,14 +8,14 @@
   function drawCharts() {
     // Temperature
     var temp_data = google.visualization.arrayToDataTable([
-      ['Time', 'Temperature'],
+      ['Time', 'Temperature [°C]'],
       % for row in temp_history:
         ['{{ row[1] }}', {{ row[0] }}],
       % end
     ]);
 
     var temp_options = {
-      title: 'Temperature',
+      title: 'Temperature [°C]',
       legend: { position: 'none' }
     };
 
@@ -24,20 +24,37 @@
 
     // Humidity
     var hmdt_data = google.visualization.arrayToDataTable([
-      ['Time', 'Humidity'],
+      ['Time', 'Humidity [%]'],
       % for row in hmdt_history:
         ['{{ row[1] }}', {{ row[0] }}],
       % end
     ]);
 
     var hmdt_options = {
-      title: 'Humidity',
+      title: 'Humidity [%]',
       legend: { position: 'none' }
     };
 
     var hmdt_chart = new google.visualization.LineChart(document.getElementById('hmdt_chart'));
 
     hmdt_chart.draw(hmdt_data, hmdt_options);
+
+    // Water level
+    var water_data = google.visualization.arrayToDataTable([
+      ['Time', 'Water level'],
+      % for row in water_history:
+        ['{{ row[1] }}', {{ row[0] }}],
+      % end
+    ]);
+
+    var water_options = {
+      title: 'Water level',
+      legend: { position: 'none' }
+    };
+
+    var water_chart = new google.visualization.LineChart(document.getElementById('water_chart'));
+
+    water_chart.draw(water_data, water_options);
   }
 </script>
 
@@ -53,6 +70,10 @@
 
   <article>
     <div id="hmdt_chart" style="width: 100%; min-height: 450px"></div>
+  </article>
+
+  <article>
+    <div id="water_chart" style="width: 100%; min-height: 450px"></div>
   </article>
 </section>
 
