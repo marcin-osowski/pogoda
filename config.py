@@ -4,10 +4,9 @@ MAX_DATA_DELAY_SEC=60
 LOGGER_INTERVAL_SEC=120
 
 # Common settings.
-SQLITE_DB="db/db.sqlite3"
 GCP_CREDENTIALS="./gcp-credentials.json"
 GCP_PROJECT="pogoda-240516"
-GCP_KIND="Reading"
+GCP_KIND_PREFIX="reading:"
 
 # Web server settings.
 PROD_HTTP_HOST='0.0.0.0'

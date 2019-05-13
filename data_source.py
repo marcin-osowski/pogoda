@@ -73,18 +73,18 @@ class WeatherDataSource(object):
             try:
                 WeatherDataSource._stream_reader()
             except:
-                print "Problem while reading %s" % config.COMM_PORT
+                print("Problem while reading %s" % config.COMM_PORT)
                 traceback.print_exc()
                 time.sleep(5.0)
-            print "Re-starting data source stream reader."
+            print("Re-starting data source stream reader.")
 
     @staticmethod
     def _stream_reader():
-        print "Opening %s" % config.COMM_PORT
+        print("Opening %s" % config.COMM_PORT)
         stream = io.open(config.COMM_PORT, mode='rt', buffering=1, errors='replace')
-        print "Opened %s" % config.COMM_PORT
+        print("Opened %s" % config.COMM_PORT)
         while not stream.closed:
-            line = stream.next().strip()
+            line = stream.readline().strip()
             if not line:
                 # Empty line
                 continue

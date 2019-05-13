@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 from google.cloud import datastore
 import os
@@ -22,7 +22,7 @@ def get_and_insert_data(weather_data):
             return
         if time is None:
             return
-        rows_to_add.append(time, name, value))
+        rows_to_add.append((time, name, value))
 
     add_row(weather_data.temperature.get_with_timestamp(), "temperature")
     add_row(weather_data.humidity.get_with_timestamp(), "humidity")
@@ -33,17 +33,15 @@ def get_and_insert_data(weather_data):
 
         def create_entity(row):
             time, name, value = row
-            key = client.key(config.GCP_KIND)
+            key = client.key(config.GCP_KIND_PREFIX + name)
             reading_ent = datastore.Entity(key)
             reading_ent.update(dict(
                 time=time,
-                name=name,
                 value=value,
             ))
             return reading_ent
-
         reading_ents = map(create_entity, rows_to_add)
-            client.put(reading_ent)
+
         client.put_multi(reading_ents)
 
 if __name__ == "__main__":
@@ -53,6 +51,6 @@ if __name__ == "__main__":
         try:
             get_and_insert_data(weather_data)
         except:
-            print "Problem while inserting data"
+            print("Problem while inserting data")
             traceback.print_exc()
         time.sleep(config.LOGGER_INTERVAL_SEC)
