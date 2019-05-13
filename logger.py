@@ -1,11 +1,17 @@
 #!/usr/bin/env python
 
+from google.cloud import datastore
+import os
 import sqlite3
 import time
 import traceback
 
 import config
 import data_source
+
+def create_datastore_client():
+    os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = config.GCP_CREDENTIALS
+    return datastore.Client(project=config.GCP_PROJECT)
 
 def get_and_insert_data(weather_data):
     """Retrieves data and inserts it into a DB, once."""
@@ -16,19 +22,29 @@ def get_and_insert_data(weather_data):
             return
         if time is None:
             return
-        rows_to_add.append((time.isoformat(" "), name, value))
+        rows_to_add.append(time, name, value))
 
     add_row(weather_data.temperature.get_with_timestamp(), "temperature")
     add_row(weather_data.humidity.get_with_timestamp(), "humidity")
     add_row(weather_data.water_level.get_with_timestamp(), "water_level")
 
     if rows_to_add:
-        with sqlite3.connect(config.SQLITE_DB) as conn:
-            cur = conn.cursor()
-            cur.executemany("""
-                INSERT INTO readings (datetime, name, value)
-                VALUES (?, ?, ?)""", rows_to_add)
-            conn.commit()
+        client = create_datastore_client()
+
+        def create_entity(row):
+            time, name, value = row
+            key = client.key(config.GCP_KIND)
+            reading_ent = datastore.Entity(key)
+            reading_ent.update(dict(
+                time=time,
+                name=name,
+                value=value,
+            ))
+            return reading_ent
+
+        reading_ents = map(create_entity, rows_to_add)
+            client.put(reading_ent)
+        client.put_multi(reading_ents)
 
 if __name__ == "__main__":
     weather_data = data_source.WeatherDataSource

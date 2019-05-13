@@ -5,6 +5,9 @@ LOGGER_INTERVAL_SEC=120
 
 # Common settings.
 SQLITE_DB="db/db.sqlite3"
+GCP_CREDENTIALS="./gcp-credentials.json"
+GCP_PROJECT="pogoda-240516"
+GCP_KIND="Reading"
 
 # Web server settings.
 PROD_HTTP_HOST='0.0.0.0'
