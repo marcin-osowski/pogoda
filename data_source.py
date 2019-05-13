@@ -50,6 +50,7 @@ class WeatherDataSource(object):
     # The available readings.
     temperature = LastValueRead()
     humidity = LastValueRead()
+    water_level = LastValueRead()
 
     # Reader thread spawn lock
     _lock = threading.Lock()
@@ -88,7 +89,7 @@ class WeatherDataSource(object):
                 # Empty line
                 continue
 
-            match = re.match("^([a-zA-Z]+): ([0-9.]+)$", line)
+            match = re.match("^([a-zA-Z ]+): ([0-9.]+)$", line)
             if not match:
                 # Damaged line.
                 continue
@@ -101,10 +102,12 @@ class WeatherDataSource(object):
                 # Not a valid float value
                 continue
 
-            if kind == "Hmdt":
+            if kind == "Humidity":
                 WeatherDataSource.humidity.set(value)
-            if kind == "Temp":
+            if kind == "Temperature":
                 WeatherDataSource.temperature.set(value)
+            if kind == "Water level":
+                WeatherDataSource.water_level.set(value)
             # Unknown data kind, drop.
 
 # Start the thread

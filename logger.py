@@ -20,6 +20,7 @@ def get_and_insert_data(weather_data):
 
     add_row(weather_data.temperature.get_with_timestamp(), "temperature")
     add_row(weather_data.humidity.get_with_timestamp(), "humidity")
+    add_row(weather_data.water_level.get_with_timestamp(), "water_level")
 
     if rows_to_add:
         with sqlite3.connect(config.SQLITE_DB) as conn:
