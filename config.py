@@ -5,7 +5,7 @@ LOGGER_INTERVAL_SEC=120
 
 # Common settings.
 GCP_CREDENTIALS="./gcp-credentials.json"
-GCP_PROJECT="pogoda-240516"
+GCP_PROJECT="pogoda-240600"
 GCP_KIND_PREFIX="reading:"
 
 # Web server settings.
