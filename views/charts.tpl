@@ -10,7 +10,7 @@
     var temp_data = google.visualization.arrayToDataTable([
       ['Time', 'Temperature [°C]'],
       % for row in temp_history:
-        ['{{ row[1] }}', {{ row[0] }}],
+        [new Date('{{ row[1] }}'), {{ row[0] }}],
       % end
     ]);
 
@@ -26,7 +26,7 @@
     var hmdt_data = google.visualization.arrayToDataTable([
       ['Time', 'Humidity [%]'],
       % for row in hmdt_history:
-        ['{{ row[1] }}', {{ row[0] }}],
+        [new Date('{{ row[1] }}'), {{ row[0] }}],
       % end
     ]);
 
@@ -43,7 +43,7 @@
     var water_data = google.visualization.arrayToDataTable([
       ['Time', 'Water level'],
       % for row in water_history:
-        ['{{ row[1] }}', {{ row[0] }}],
+        [new Date('{{ row[1] }}'), {{ row[0] }}],
       % end
     ]);
 
