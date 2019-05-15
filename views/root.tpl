@@ -7,12 +7,18 @@
 <section id="pageContent">
   <article>
     <table>
-      <tr><td>Temperature:</td><td>{{ temp }} °C</td></tr>
-      <tr><td>Humidity:</td><td>{{ hmdt }} %</td></tr>
+      % if temp is not None:
+          <tr><td>Temperature:</td><td>{{ temp }} °C</td></tr>
+      % end
+      % if hmdt is not None:
+          <tr><td>Humidity:</td><td>{{ hmdt }} %</td></tr>
+      % end
     </table>
     <p>&nbsp;</p>
     <p>&nbsp;</p>
-    <p>Oldest data: {{ "%.0f" % data_age }} seconds ago.</p>
+    % if data_age is not None:
+        <p>Oldest data: {{ "%.0f" % data_age }} seconds ago.</p>
+    % end
   </article>
 </section>
 

@@ -17,30 +17,34 @@ def create_datastore_client():
 def get_latest_reading(client, name):
     """Returns the value and timestamp of the latest reading."""
     query = client.query(kind=config.GCP_KIND_PREFIX + name)
-    query.order = ["-time"]
+    query.order = ["-timestamp"]
     results = list(query.fetch(limit=1))
 
     if not results:
         return None, None
     result = results[0]
-    if 'value' not in result:
+    if "value" not in result:
         return None, None
-    value = result['value']
-    if 'time' not in result:
+    value = result["value"]
+    if "timestamp" not in result:
         return None, None
-    time = result['time']
+    timestamp = result["timestamp"]
 
-    return value, time
+    return value, timestamp
 
 def get_last_readings(client, name, timedelta):
     """Returns values and timestamps of recent readings."""
     minimum_time = datetime.now(timezone.utc) - timedelta
     query = client.query(kind=config.GCP_KIND_PREFIX + name)
-    query.add_filter("time", ">=", minimum_time)
-    query.order = ["time"]
+    query.add_filter("timestamp", ">=", minimum_time)
+    query.order = ["timestamp"]
     parsed_results = []
     for entity in query.fetch():
-        parsed_results.append((entity["value"], entity["time"]))
+        if "value" not in entity:
+            continue
+        if "timestamp" not in entity:
+            continue
+        parsed_results.append((entity["value"], entity["timestamp"]))
     return parsed_results
 
 def abs_delta_seconds(first, second):
@@ -79,6 +83,8 @@ def apply_smoothing(readings, minutes):
     return output_readings
 
 def date_to_seconds_ago(date):
+    if date is None:
+        return None
     time_ago = datetime.now(timezone.utc) - date
     return time_ago.total_seconds()
 
@@ -90,7 +96,10 @@ def root():
 
     temp_ago = date_to_seconds_ago(temp_date)
     hmdt_ago = date_to_seconds_ago(hmdt_date)
-    data_age = max(temp_ago, hmdt_ago)
+    if temp_ago is None or hmdt_ago is None:
+        data_age = None
+    else:
+        data_age = max(temp_ago, hmdt_ago)
 
     return bottle.template("root.tpl", dict(
         temp=temp,
