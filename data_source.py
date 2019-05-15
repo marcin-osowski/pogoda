@@ -1,7 +1,7 @@
+import collections
 import datetime
 import io
 import re
-import sys
 import threading
 import time
 import traceback
@@ -10,10 +10,7 @@ import config
 
 
 class LastValueRead(object):
-    """Thread safe. Returns the last value read.
-
-    If data is older than config.MAX_DATA_DELAY_SEC then returns None.
-    """
+    """Thread safe. Returns the last value read."""
 
     def __init__(self):
         self._lock = threading.Lock()
@@ -37,10 +34,6 @@ class LastValueRead(object):
             if self._value is None:
                 # No data available.
                 return None, None
-            latency = datetime.datetime.utcnow() - self._timestamp
-            if latency > datetime.timedelta(seconds=config.MAX_DATA_DELAY_SEC):
-                # Data too old.
-                return None, None
             return self._value, self._timestamp
 
 
@@ -48,9 +41,7 @@ class WeatherDataSource(object):
     """Retrieves from device and stores all recent weather data. Singleton."""
 
     # The available readings.
-    temperature = LastValueRead()
-    humidity = LastValueRead()
-    water_level = LastValueRead()
+    readings = collections.defaultdict(lambda: LastValueRead())
 
     # Reader thread spawn lock
     _lock = threading.Lock()
@@ -102,13 +93,8 @@ class WeatherDataSource(object):
                 # Not a valid float value
                 continue
 
-            if kind == "Humidity":
-                WeatherDataSource.humidity.set(value)
-            if kind == "Temperature":
-                WeatherDataSource.temperature.set(value)
-            if kind == "Water level":
-                WeatherDataSource.water_level.set(value)
-            # Unknown data kind, drop.
+            # Store the value.
+            WeatherDataSource.readings[kind].set(value)
 
 # Start the thread
 WeatherDataSource.Start()

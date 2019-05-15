@@ -1,7 +1,13 @@
 # Logger settings.
 COMM_PORT="/dev/ttyUSB0"
-MAX_DATA_DELAY_SEC=60
 LOGGER_INTERVAL_SEC=120
+NAME_TRANSLATION={
+    "Humidity": "humidity",
+    "Temperature": "temperature",
+    "Water level": "water_level",
+}
+# Limits RAM usage in case of DB unreachability.
+MAX_QUEUE_SIZE=1024*1024
 
 # Common settings.
 GCP_CREDENTIALS="./gcp-credentials.json"
