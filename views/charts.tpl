@@ -16,7 +16,8 @@
 
     var temp_options = {
       title: 'Temperature [°C]',
-      legend: { position: 'none' }
+      legend: { position: 'none' },
+      chartArea: { width: '100%', height: '80%' },
     };
 
     var temp_chart = new google.visualization.LineChart(document.getElementById('temp_chart'));
@@ -32,7 +33,8 @@
 
     var hmdt_options = {
       title: 'Humidity [%]',
-      legend: { position: 'none' }
+      legend: { position: 'none' },
+      chartArea: { width: '100%', height: '80%' },
     };
 
     var hmdt_chart = new google.visualization.LineChart(document.getElementById('hmdt_chart'));
@@ -49,7 +51,8 @@
 
     var pres_options = {
       title: 'Pressure [hPa]',
-      legend: { position: 'none' }
+      legend: { position: 'none' },
+      chartArea: { width: '100%', height: '80%' },
     };
 
     var pres_chart = new google.visualization.LineChart(document.getElementById('pres_chart'));
@@ -66,7 +69,8 @@
 
     var water_options = {
       title: 'Water level',
-      legend: { position: 'none' }
+      legend: { position: 'none' },
+      chartArea: { width: '100%', height: '80%' },
     };
 
     var water_chart = new google.visualization.LineChart(document.getElementById('water_chart'));
