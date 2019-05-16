@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import bottle
+from concurrent import futures
 from datetime import datetime, timezone, timedelta
 from google.cloud import datastore
 import os
@@ -9,6 +10,7 @@ import time
 import config
 
 app = bottle.Bottle()
+executor = futures.ThreadPoolExecutor(max_workers=20)
 
 
 class BackendLatencyTimer(object):
@@ -29,6 +31,7 @@ def create_datastore_client():
     os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = config.GCP_CREDENTIALS
     return datastore.Client(project=config.GCP_PROJECT)
 
+
 def get_latest_reading(latency, client, name):
     """Returns the value and timestamp of the latest reading."""
     query = client.query(kind=config.GCP_KIND_PREFIX + name)
@@ -48,20 +51,19 @@ def get_latest_reading(latency, client, name):
 
     return value, timestamp
 
-def get_last_readings(latency, client, name, timedelta):
+def get_last_readings(client, name, timedelta):
     """Returns values and timestamps of recent readings."""
     minimum_time = datetime.now(timezone.utc) - timedelta
     query = client.query(kind=config.GCP_KIND_PREFIX + name)
     query.add_filter("timestamp", ">=", minimum_time)
     query.order = ["timestamp"]
     parsed_results = []
-    with latency:
-        for entity in query.fetch():
-            if "value" not in entity:
-                continue
-            if "timestamp" not in entity:
-                continue
-            parsed_results.append((entity["value"], entity["timestamp"]))
+    for entity in query.fetch():
+        if "value" not in entity:
+            continue
+        if "timestamp" not in entity:
+            continue
+        parsed_results.append((entity["value"], entity["timestamp"]))
     return parsed_results
 
 def abs_delta_seconds(first, second):
@@ -132,20 +134,22 @@ def root():
 @app.get("/charts")
 def route_charts():
     latency = BackendLatencyTimer()
-    client = create_datastore_client()
-    temp_history = get_last_readings(
-        latency, client, "temperature", timedelta(days=1))
-    hmdt_history = get_last_readings(
-        latency, client, "humidity", timedelta(days=1))
-    pres_history = get_last_readings(
-        latency, client, "pressure", timedelta(days=1))
-    water_history = get_last_readings(
-        latency, client, "water_level", timedelta(days=1))
+    with latency:
+        client = create_datastore_client()
+        temp_history = executor.submit(
+            get_last_readings, client, "temperature", timedelta(days=1))
+        hmdt_history = executor.submit(
+            get_last_readings, client, "humidity", timedelta(days=1))
+        pres_history = executor.submit(
+            get_last_readings, client, "pressure", timedelta(days=1))
+        water_history = executor.submit(
+            get_last_readings, client, "water_level", timedelta(days=1))
+        futures.wait([temp_history, hmdt_history, pres_history, water_history])
 
-    temp_history = apply_smoothing(temp_history, minutes=5.0)
-    hmdt_history = apply_smoothing(hmdt_history, minutes=20.0)
-    pres_history = apply_smoothing(pres_history, minutes=20.0)
-    water_history = apply_smoothing(water_history, minutes=20.0)
+    temp_history = apply_smoothing(temp_history.result(), minutes=5.0)
+    hmdt_history = apply_smoothing(hmdt_history.result(), minutes=20.0)
+    pres_history = apply_smoothing(pres_history.result(), minutes=20.0)
+    water_history = apply_smoothing(water_history.result(), minutes=20.0)
 
     return bottle.template("charts.tpl", dict(
         temp_history=temp_history,
