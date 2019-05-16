@@ -10,15 +10,31 @@ import config
 
 app = bottle.Bottle()
 
+
+class BackendLatencyTimer(object):
+    """A simple class to measure backend latency."""
+
+    def __init__(self):
+        self.total = timedelta()
+
+    def __enter__(self):
+        self._start = datetime.utcnow()
+
+    def __exit__(self, *args):
+        self.total += datetime.utcnow() - self._start
+
+
 def create_datastore_client():
+    """Creates a Datastore Client object."""
     os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = config.GCP_CREDENTIALS
     return datastore.Client(project=config.GCP_PROJECT)
 
-def get_latest_reading(client, name):
+def get_latest_reading(latency, client, name):
     """Returns the value and timestamp of the latest reading."""
     query = client.query(kind=config.GCP_KIND_PREFIX + name)
     query.order = ["-timestamp"]
-    results = list(query.fetch(limit=1))
+    with latency:
+        results = list(query.fetch(limit=1))
 
     if not results:
         return None, None
@@ -32,19 +48,20 @@ def get_latest_reading(client, name):
 
     return value, timestamp
 
-def get_last_readings(client, name, timedelta):
+def get_last_readings(latency, client, name, timedelta):
     """Returns values and timestamps of recent readings."""
     minimum_time = datetime.now(timezone.utc) - timedelta
     query = client.query(kind=config.GCP_KIND_PREFIX + name)
     query.add_filter("timestamp", ">=", minimum_time)
     query.order = ["timestamp"]
     parsed_results = []
-    for entity in query.fetch():
-        if "value" not in entity:
-            continue
-        if "timestamp" not in entity:
-            continue
-        parsed_results.append((entity["value"], entity["timestamp"]))
+    with latency:
+        for entity in query.fetch():
+            if "value" not in entity:
+                continue
+            if "timestamp" not in entity:
+                continue
+            parsed_results.append((entity["value"], entity["timestamp"]))
     return parsed_results
 
 def abs_delta_seconds(first, second):
@@ -90,9 +107,10 @@ def date_to_seconds_ago(date):
 
 @app.get("/")
 def root():
+    latency = BackendLatencyTimer()
     client = create_datastore_client()
-    temp, temp_date = get_latest_reading(client, "temperature")
-    hmdt, hmdt_date = get_latest_reading(client, "humidity")
+    temp, temp_date = get_latest_reading(latency, client, "temperature")
+    hmdt, hmdt_date = get_latest_reading(latency, client, "humidity")
 
     temp_ago = date_to_seconds_ago(temp_date)
     hmdt_ago = date_to_seconds_ago(hmdt_date)
@@ -105,14 +123,16 @@ def root():
         temp=temp,
         hmdt=hmdt,
         data_age=data_age,
+        latency=latency.total,
     ))
 
 @app.get("/charts")
 def route_charts():
+    latency = BackendLatencyTimer()
     client = create_datastore_client()
-    temp_history = get_last_readings(client, "temperature", timedelta(days=1))
-    hmdt_history = get_last_readings(client, "humidity", timedelta(days=1))
-    water_history = get_last_readings(client, "water_level", timedelta(days=1))
+    temp_history = get_last_readings(latency, client, "temperature", timedelta(days=1))
+    hmdt_history = get_last_readings(latency, client, "humidity", timedelta(days=1))
+    water_history = get_last_readings(latency, client, "water_level", timedelta(days=1))
 
     temp_history = apply_smoothing(temp_history, minutes=5.0)
     hmdt_history = apply_smoothing(hmdt_history, minutes=20.0)
@@ -122,6 +142,7 @@ def route_charts():
         temp_history=temp_history,
         hmdt_history=hmdt_history,
         water_history=water_history,
+        latency=latency.total,
     ))
 
 @app.get("/static/<filepath:path>")
