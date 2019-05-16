@@ -5,6 +5,7 @@ NAME_TRANSLATION={
     "Humidity": "humidity",
     "Temperature": "temperature",
     "Water level": "water_level",
+    "Pressure": "pressure",
 }
 # Limits RAM usage in case of DB unreachability.
 MAX_QUEUE_SIZE=1024*1024
