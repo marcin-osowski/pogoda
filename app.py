@@ -144,7 +144,7 @@ def route_charts():
 
     temp_history = apply_smoothing(temp_history, minutes=5.0)
     hmdt_history = apply_smoothing(hmdt_history, minutes=20.0)
-    pres_history = apply_smoothing(pres_history, minutes=5.0)
+    pres_history = apply_smoothing(pres_history, minutes=20.0)
     water_history = apply_smoothing(water_history, minutes=20.0)
 
     return bottle.template("charts.tpl", dict(
