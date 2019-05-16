@@ -13,6 +13,9 @@
       % if hmdt is not None:
           <tr><td>Humidity:</td><td>{{ hmdt }} %</td></tr>
       % end
+      % if pres is not None:
+          <tr><td>Pressure:</td><td>{{ pres }} hPa</td></tr>
+      % end
     </table>
     <p>&nbsp;</p>
     <p>&nbsp;</p>

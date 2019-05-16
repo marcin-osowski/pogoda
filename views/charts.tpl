@@ -39,6 +39,23 @@
 
     hmdt_chart.draw(hmdt_data, hmdt_options);
 
+    // Pressure
+    var pres_data = google.visualization.arrayToDataTable([
+      ['Time', 'Pressure [hPa]'],
+      % for row in pres_history:
+        [new Date('{{ row[1] }}'), {{ row[0] }}],
+      % end
+    ]);
+
+    var pres_options = {
+      title: 'Pressure [hPa]',
+      legend: { position: 'none' }
+    };
+
+    var pres_chart = new google.visualization.LineChart(document.getElementById('pres_chart'));
+
+    pres_chart.draw(pres_data, pres_options);
+
     // Water level
     var water_data = google.visualization.arrayToDataTable([
       ['Time', 'Water level'],
@@ -70,6 +87,10 @@
 
   <article>
     <div id="hmdt_chart" style="width: 100%; min-height: 450px"></div>
+  </article>
+
+  <article>
+    <div id="pres_chart" style="width: 100%; min-height: 450px"></div>
   </article>
 
   <article>

@@ -111,17 +111,20 @@ def root():
     client = create_datastore_client()
     temp, temp_date = get_latest_reading(latency, client, "temperature")
     hmdt, hmdt_date = get_latest_reading(latency, client, "humidity")
+    pres, pres_date = get_latest_reading(latency, client, "pressure")
 
     temp_ago = date_to_seconds_ago(temp_date)
     hmdt_ago = date_to_seconds_ago(hmdt_date)
-    if temp_ago is None or hmdt_ago is None:
+    pres_ago = date_to_seconds_ago(pres_date)
+    if None in [temp_ago, hmdt_ago, pres_ago]:
         data_age = None
     else:
-        data_age = max(temp_ago, hmdt_ago)
+        data_age = max(temp_ago, hmdt_ago, pres_ago)
 
     return bottle.template("root.tpl", dict(
         temp=temp,
         hmdt=hmdt,
+        pres=pres,
         data_age=data_age,
         latency=latency.total,
     ))
@@ -134,16 +137,20 @@ def route_charts():
         latency, client, "temperature", timedelta(days=1))
     hmdt_history = get_last_readings(
         latency, client, "humidity", timedelta(days=1))
+    pres_history = get_last_readings(
+        latency, client, "pressure", timedelta(days=1))
     water_history = get_last_readings(
         latency, client, "water_level", timedelta(days=1))
 
     temp_history = apply_smoothing(temp_history, minutes=5.0)
     hmdt_history = apply_smoothing(hmdt_history, minutes=20.0)
+    pres_history = apply_smoothing(pres_history, minutes=5.0)
     water_history = apply_smoothing(water_history, minutes=20.0)
 
     return bottle.template("charts.tpl", dict(
         temp_history=temp_history,
         hmdt_history=hmdt_history,
+        pres_history=pres_history,
         water_history=water_history,
         latency=latency.total,
     ))
