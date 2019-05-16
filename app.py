@@ -130,9 +130,12 @@ def root():
 def route_charts():
     latency = BackendLatencyTimer()
     client = create_datastore_client()
-    temp_history = get_last_readings(latency, client, "temperature", timedelta(days=1))
-    hmdt_history = get_last_readings(latency, client, "humidity", timedelta(days=1))
-    water_history = get_last_readings(latency, client, "water_level", timedelta(days=1))
+    temp_history = get_last_readings(
+        latency, client, "temperature", timedelta(days=1))
+    hmdt_history = get_last_readings(
+        latency, client, "humidity", timedelta(days=1))
+    water_history = get_last_readings(
+        latency, client, "water_level", timedelta(days=1))
 
     temp_history = apply_smoothing(temp_history, minutes=5.0)
     hmdt_history = apply_smoothing(hmdt_history, minutes=20.0)
