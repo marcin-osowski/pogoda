@@ -51,6 +51,7 @@ def get_latest_reading(latency, client, name):
 
     return value, timestamp
 
+
 def get_last_readings(client, name, timedelta):
     """Returns values and timestamps of recent readings."""
     minimum_time = datetime.now(timezone.utc) - timedelta
@@ -66,9 +67,11 @@ def get_last_readings(client, name, timedelta):
         parsed_results.append((entity["value"], entity["timestamp"]))
     return parsed_results
 
+
 def abs_delta_seconds(first, second):
     delta = (second - first).total_seconds()
     return abs(delta)
+
 
 def apply_smoothing(readings, minutes):
     """Applies a +- X min average to the readings."""
@@ -107,6 +110,7 @@ def date_to_seconds_ago(date):
     time_ago = datetime.now(timezone.utc) - date
     return time_ago.total_seconds()
 
+
 @app.get("/")
 def root():
     latency = BackendLatencyTimer()
@@ -130,6 +134,7 @@ def root():
         data_age=data_age,
         latency=latency.total,
     ))
+
 
 @app.get("/charts")
 def route_charts():
@@ -158,6 +163,7 @@ def route_charts():
         water_history=water_history,
         latency=latency.total,
     ))
+
 
 @app.get("/static/<filepath:path>")
 def route_static(filepath):
