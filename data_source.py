@@ -66,35 +66,38 @@ class WeatherDataSource(object):
             except:
                 print("Problem while reading %s" % config.COMM_PORT)
                 traceback.print_exc()
-                time.sleep(5.0)
+                time.sleep(30.0)
             print("Re-starting data source stream reader.")
 
     @staticmethod
     def _stream_reader():
         print("Opening %s" % config.COMM_PORT)
-        stream = io.open(config.COMM_PORT, mode='rt', buffering=1, errors='replace')
-        print("Opened %s" % config.COMM_PORT)
-        while not stream.closed:
-            line = stream.readline().strip()
-            if not line:
-                # Empty line
-                continue
+        with io.open(config.COMM_PORT, mode='rt', buffering=1, errors='replace') as stream:
+            print("Opened %s" % config.COMM_PORT)
+            while True:
+                line = stream.readline()
+                if not line:
+                    raise RuntimeError("Input stream %s was terminated")
+                line = line.strip()
+                if not line:
+                    # Empty line (except for newline character).
+                    continue
 
-            match = re.match("^([a-zA-Z ]+): ([0-9.]+)$", line)
-            if not match:
-                # Damaged line.
-                continue
-            kind = match.group(1)
-            value = match.group(2)
+                match = re.match("^([a-zA-Z ]+): ([0-9.]+)$", line)
+                if not match:
+                    # Damaged line.
+                    continue
+                kind = match.group(1)
+                value = match.group(2)
 
-            try:
-                value = float(value)
-            except:
-                # Not a valid float value
-                continue
+                try:
+                    value = float(value)
+                except:
+                    # Not a valid float value
+                    continue
 
-            # Store the value.
-            WeatherDataSource.readings[kind].set(value)
+                # Store the value.
+                WeatherDataSource.readings[kind].set(value)
 
 # Start the thread
 WeatherDataSource.Start()
