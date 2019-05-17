@@ -39,6 +39,23 @@
 
     hmdt_chart.draw(hmdt_data, hmdt_options);
 
+    // Vapor pressure
+    var vapor_pres_data = google.visualization.arrayToDataTable([
+      ['Time', 'Vapor pressure [hPa]'],
+      % for row in vapor_pres_history:
+        [new Date('{{ row[1] }}'), {{ row[0] }}],
+      % end
+    ]);
+
+    var vapor_pres_options = {
+      title: 'Vapor pressure [hPa]',
+      legend: { position: 'none' },
+    };
+
+    var vapor_pres_chart = new google.visualization.LineChart(document.getElementById('vapor_pres_chart'));
+
+    vapor_pres_chart.draw(vapor_pres_data, vapor_pres_options);
+
     // Pressure
     var pres_data = google.visualization.arrayToDataTable([
       ['Time', 'Pressure [hPa]'],
@@ -87,6 +104,10 @@
 
   <article>
     <div id="hmdt_chart" style="width: 100%; min-height: 450px"></div>
+  </article>
+
+  <article>
+    <div id="vapor_pres_chart" style="width: 100%; min-height: 450px"></div>
   </article>
 
   <article>
