@@ -1,0 +1,1 @@
+google_cloud_datastore >= 1.7.3
