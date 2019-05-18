@@ -33,12 +33,11 @@ def create_datastore_client():
     return datastore.Client(project=config.GCP_PROJECT)
 
 
-def get_latest_reading(latency, client, name):
+def get_latest_reading(client, name):
     """Returns the value and timestamp of the latest reading."""
     query = client.query(kind=config.GCP_KIND_PREFIX + name)
     query.order = ["-timestamp"]
-    with latency:
-        results = list(query.fetch(limit=1))
+    results = list(query.fetch(limit=1))
 
     if not results:
         return None, None
@@ -223,11 +222,11 @@ def root():
     with latency:
         client = create_datastore_client()
         temp_and_date = executor.submit(
-            get_latest_reading, latency, client, "temperature")
+            get_latest_reading, client, "temperature")
         hmdt_and_date = executor.submit(
-            get_latest_reading, latency, client, "humidity")
+            get_latest_reading, client, "humidity")
         pres_and_date = executor.submit(
-            get_latest_reading, latency, client, "pressure")
+            get_latest_reading, client, "pressure")
         futures.wait([temp_and_date, hmdt_and_date, pres_and_date])
 
     temp, temp_date = temp_and_date.result()
