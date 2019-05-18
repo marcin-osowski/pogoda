@@ -19,7 +19,9 @@ Pin layout (for Arduino Nano):
   - A5: SCL ping for LCD and pressure sensor
 
 Required libraries:
-  TODO
+  - Adafruit Unified Sensor, ver >= 1.0.3
+  - DHT sensor library, ver >= 1.3.4
+  - TODO
 
 */
 
