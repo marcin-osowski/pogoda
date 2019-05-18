@@ -7,9 +7,14 @@
 <section id="pageContent">
   <article>
     <table>
+      <!-- Temperature -->
       % if temp is not None:
           <tr><td>Temperature:</td><td>{{ temp }} °C</td></tr>
       % end
+
+      <tr><td colspan=2></td></tr>
+
+      <!-- Humidity -->
       % if hmdt is not None:
           <tr><td>Humidity:</td><td>{{ hmdt }} %</td></tr>
       % end
@@ -19,6 +24,10 @@
       % if dew_point is not None:
           <tr><td>Dew point:</td><td>{{ "%.1f" % dew_point }} °C</td></tr>
       % end
+
+      <tr><td colspan=2></td></tr>
+
+      <!-- Pressure -->
       % if pres is not None:
           <tr><td>Pressure:</td><td>{{ pres }} hPa</td></tr>
       % end
