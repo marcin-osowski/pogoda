@@ -1,7 +1,7 @@
 # pogoda
 Weather station at my home.
 
-Frontend: http://pogoda.osowski.info
+Frontend: https://pogoda.osowski.info
 
 ## Setup
 1. `arduino_controller/`: an Arduino Nano board connected to sensors,
