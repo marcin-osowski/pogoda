@@ -10,7 +10,7 @@
     var temp_data = google.visualization.arrayToDataTable([
       ['Time', 'Temperature [°C]'],
       % for row in temp_history:
-        [new Date('{{ row[1] }}'), {{ row[0] }}],
+        [new Date('{{ row[1].isoformat() }}'), {{ row[0] }}],
       % end
     ]);
 
@@ -26,7 +26,7 @@
     var hmdt_data = google.visualization.arrayToDataTable([
       ['Time', 'Humidity [%]'],
       % for row in hmdt_history:
-        [new Date('{{ row[1] }}'), {{ row[0] }}],
+        [new Date('{{ row[1].isoformat() }}'), {{ row[0] }}],
       % end
     ]);
 
@@ -43,7 +43,7 @@
     var vapor_pres_data = google.visualization.arrayToDataTable([
       ['Time', 'Vapor pressure [hPa]'],
       % for row in vapor_pres_history:
-        [new Date('{{ row[1] }}'), {{ row[0] }}],
+        [new Date('{{ row[1].isoformat() }}'), {{ row[0] }}],
       % end
     ]);
 
@@ -60,7 +60,7 @@
     var pres_data = google.visualization.arrayToDataTable([
       ['Time', 'Pressure [hPa]'],
       % for row in pres_history:
-        [new Date('{{ row[1] }}'), {{ row[0] }}],
+        [new Date('{{ row[1].isoformat() }}'), {{ row[0] }}],
       % end
     ]);
 
@@ -77,7 +77,7 @@
     var water_data = google.visualization.arrayToDataTable([
       ['Time', 'Water level'],
       % for row in water_history:
-        [new Date('{{ row[1] }}'), {{ row[0] }}],
+        [new Date('{{ row[1].isoformat() }}'), {{ row[0] }}],
       % end
     ]);
 
