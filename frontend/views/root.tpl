@@ -22,9 +22,9 @@
     </table>
     <p>&nbsp;</p>
     <p>&nbsp;</p>
-    % if data_age is not None:
-        <p>Oldest data: {{ "%.0f" % data_age }} seconds ago.</p>
-    % end
+    <p>Oldest data:
+    {{ "%.0f seconds ago." % data_age if data_age is not None else "unknown." }}
+    </p>
   </article>
 </section>
 
