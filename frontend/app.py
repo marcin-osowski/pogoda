@@ -11,7 +11,7 @@ import time
 import config
 
 app = bottle.Bottle()
-executor = futures.ThreadPoolExecutor(max_workers=20)
+executor = futures.ThreadPoolExecutor(max_workers=40)
 
 
 class BackendLatencyTimer(object):
@@ -220,10 +220,19 @@ def date_to_seconds_ago(date):
 @app.get("/")
 def root():
     latency = BackendLatencyTimer()
-    client = create_datastore_client()
-    temp, temp_date = get_latest_reading(latency, client, "temperature")
-    hmdt, hmdt_date = get_latest_reading(latency, client, "humidity")
-    pres, pres_date = get_latest_reading(latency, client, "pressure")
+    with latency:
+        client = create_datastore_client()
+        temp_and_date = executor.submit(
+            get_latest_reading, latency, client, "temperature")
+        hmdt_and_date = executor.submit(
+            get_latest_reading, latency, client, "humidity")
+        pres_and_date = executor.submit(
+            get_latest_reading, latency, client, "pressure")
+        futures.wait([temp_and_date, hmdt_and_date, pres_and_date])
+
+    temp, temp_date = temp_and_date.result()
+    hmdt, hmdt_date = hmdt_and_date.result()
+    pres, pres_date = pres_and_date.result()
 
     temp_ago = date_to_seconds_ago(temp_date)
     hmdt_ago = date_to_seconds_ago(hmdt_date)
