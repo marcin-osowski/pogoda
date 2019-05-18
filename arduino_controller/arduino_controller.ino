@@ -1,3 +1,28 @@
+/*
+
+An Arduino controller for the weather station. Output is
+shown on the LCD screen and written to the serial port
+with SERIAL_BAUD speed, in the following form:
+  - "Temperature: XX.X\n"
+  - "Pressure: XXXX.X\n"
+
+Units:
+  - Humidity: percentage (relative humidity)
+  - Temperature: degrees Celsius
+  - Water level: raw analog pin reading
+  - Pressure: hPa
+
+Pin layout (for Arduino Nano):
+  - A0: water level sensor analog output
+  - D7: DHT11 humidity & temperature input/output pin
+  - A4: SDA pin for LCD and pressure sensor
+  - A5: SCL ping for LCD and pressure sensor
+
+Required libraries:
+  TODO
+
+*/
+
 #include <Wire.h> 
 #include <LiquidCrystal_I2C.h>
 #include <DHT.h>
