@@ -16,6 +16,9 @@
       % if vapor_pres is not None:
           <tr><td>Vapor pressure:</td><td>{{ "%.1f" % vapor_pres }} hPa</td></tr>
       % end
+      % if dew_point is not None:
+          <tr><td>Dew point:</td><td>{{ "%.1f" % dew_point }} °C</td></tr>
+      % end
       % if pres is not None:
           <tr><td>Pressure:</td><td>{{ pres }} hPa</td></tr>
       % end

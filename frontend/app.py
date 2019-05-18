@@ -5,6 +5,7 @@ from collections import defaultdict
 from concurrent import futures
 from datetime import datetime, timezone, timedelta
 from google.cloud import datastore
+import math
 import os
 import time
 
@@ -209,6 +210,39 @@ def compute_vapor_pressure(temp_history, hmdt_history):
     return vapor_pressure_history
 
 
+def dew_point_from_vapor_pressure(vapor_pressure):
+    """Computes the dew point, in deg C.
+
+    Takes vapor pressure in hPa.
+    """
+    # Formula from Wikipedia:
+    # https://en.wikipedia.org/wiki/Dew_point
+    pa = vapor_pressure
+    a = 6.1121
+    b = 18.678
+    c = 257.14
+
+    pa_a = pa / a
+    log_pa_a = math.log(pa_a)
+
+    return c * log_pa_a / (b - log_pa_a)
+
+
+def compute_dew_point(vapor_pressure_history):
+    """Creates a time series with dew point, in deg C.
+
+    Takes a time series with vapor pressure in hPa.
+    """
+    dew_point_history = []
+    for vapor_pressure, time in vapor_pressure_history:
+        if None in [vapor_pressure, time]:
+            continue
+        dew_point = dew_point_from_vapor_pressure(vapor_pressure)
+        dew_point_history.append((dew_point, time))
+
+    return dew_point_history
+
+
 def date_to_seconds_ago(date):
     if date is None:
         return None
@@ -243,16 +277,19 @@ def root():
 
     if None in [hmdt, temp]:
         vapor_pres = None
+        dew_point = None
     else:
         hmdt_and_temp = HumidityAndTemperature()
         hmdt_and_temp.add_hmdt(hmdt)
         hmdt_and_temp.add_temp(temp)
         vapor_pres = hmdt_and_temp.vapor_pressure()
+        dew_point = dew_point_from_vapor_pressure(vapor_pres)
 
     return bottle.template("root.tpl", dict(
         temp=temp,
         hmdt=hmdt,
         vapor_pres=vapor_pres,
+        dew_point=dew_point,
         pres=pres,
         data_age=data_age,
         latency=latency.total,
@@ -278,9 +315,12 @@ def route_charts():
     vapor_pres_history = compute_vapor_pressure(
         temp_history.result(), hmdt_history.result())
 
-    temp_history = apply_smoothing(temp_history.result(), minutes=5.1)
+    dew_point_history = compute_dew_point(vapor_pres_history)
+
+    temp_history = apply_smoothing(temp_history.result(), minutes=10.1)
     hmdt_history = apply_smoothing(hmdt_history.result(), minutes=20.1)
     vapor_pres_history = apply_smoothing(vapor_pres_history, minutes=30.1)
+    dew_point_history = apply_smoothing(dew_point_history, minutes=30.1)
     pres_history = apply_smoothing(pres_history.result(), minutes=20.1)
     water_history = apply_smoothing(water_history.result(), minutes=20.1)
 
@@ -288,6 +328,7 @@ def route_charts():
         temp_history=temp_history,
         hmdt_history=hmdt_history,
         vapor_pres_history=vapor_pres_history,
+        dew_point_history=dew_point_history,
         pres_history=pres_history,
         water_history=water_history,
         latency=latency.total,

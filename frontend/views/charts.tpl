@@ -19,7 +19,8 @@
       legend: { position: 'none' },
     };
 
-    var temp_chart = new google.visualization.LineChart(document.getElementById('temp_chart'));
+    var temp_chart = new google.visualization.LineChart(
+        document.getElementById('temp_chart'));
     temp_chart.draw(temp_data, temp_options);
 
     // Humidity
@@ -35,8 +36,8 @@
       legend: { position: 'none' },
     };
 
-    var hmdt_chart = new google.visualization.LineChart(document.getElementById('hmdt_chart'));
-
+    var hmdt_chart = new google.visualization.LineChart(
+        document.getElementById('hmdt_chart'));
     hmdt_chart.draw(hmdt_data, hmdt_options);
 
     // Vapor pressure
@@ -52,9 +53,26 @@
       legend: { position: 'none' },
     };
 
-    var vapor_pres_chart = new google.visualization.LineChart(document.getElementById('vapor_pres_chart'));
-
+    var vapor_pres_chart = new google.visualization.LineChart(
+        document.getElementById('vapor_pres_chart'));
     vapor_pres_chart.draw(vapor_pres_data, vapor_pres_options);
+
+    // Dew point
+    var dew_point_data = google.visualization.arrayToDataTable([
+      ['Time', 'Dew point [°C]'],
+      % for row in dew_point_history:
+        [new Date('{{ row[1].isoformat() }}'), {{ row[0] }}],
+      % end
+    ]);
+
+    var dew_point_options = {
+      title: 'Dew point [°C]',
+      legend: { position: 'none' },
+    };
+
+    var dew_point_chart = new google.visualization.LineChart(
+        document.getElementById('dew_point_chart'));
+    dew_point_chart.draw(dew_point_data, dew_point_options);
 
     // Pressure
     var pres_data = google.visualization.arrayToDataTable([
@@ -69,8 +87,8 @@
       legend: { position: 'none' },
     };
 
-    var pres_chart = new google.visualization.LineChart(document.getElementById('pres_chart'));
-
+    var pres_chart = new google.visualization.LineChart(
+        document.getElementById('pres_chart'));
     pres_chart.draw(pres_data, pres_options);
 
     // Water level
@@ -86,8 +104,8 @@
       legend: { position: 'none' },
     };
 
-    var water_chart = new google.visualization.LineChart(document.getElementById('water_chart'));
-
+    var water_chart = new google.visualization.LineChart(
+        document.getElementById('water_chart'));
     water_chart.draw(water_data, water_options);
   }
 </script>
@@ -108,6 +126,10 @@
 
   <article>
     <div id="vapor_pres_chart" style="width: 100%; min-height: 450px"></div>
+  </article>
+
+  <article>
+    <div id="dew_point_chart" style="width: 100%; min-height: 450px"></div>
   </article>
 
   <article>
