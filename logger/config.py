@@ -8,6 +8,7 @@ NAME_TRANSLATION={
 }
 
 # Limits RAM usage in case of DB unreachability.
+# Approximate limit.
 MAX_QUEUE_SIZE=1024*1024
 
 # Database settings.
