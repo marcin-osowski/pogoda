@@ -21,7 +21,7 @@ Pin layout (for Arduino Nano):
 Required libraries:
   - Adafruit Unified Sensor, ver >= 1.0.3
   - DHT sensor library, ver >= 1.3.4
-  - TODO
+  - Adafruit BMP085 library >= 1.0.0
 
 */
 
@@ -35,11 +35,12 @@ Required libraries:
 
 // Temperature and humidity sensor.
 #define DHTPIN 7
-#define DHTTYPE DHT11
+#define DHTTYPE AM2301
 DHT dht(DHTPIN, DHTTYPE);
 
 // Water level sensor.
 #define WATER_SENSOR A0
+#define WATER_ENABLED false
 
 // Pressure sensor.
 Adafruit_BMP085 bmp;
@@ -77,7 +78,10 @@ void loop() {
   const float t = dht.readTemperature();
 
   // Read water level.
-  const int water = analogRead(WATER_SENSOR);
+  int water = 0;
+  if (WATER_ENABLED) {
+    water = analogRead(WATER_SENSOR);
+  }
 
   // Read pressure.
   const float pressure = bmp.readPressure() / 100.0;
@@ -87,8 +91,10 @@ void loop() {
   Serial.println(h);
   Serial.print("Temperature: ");
   Serial.println(t);
-  Serial.print("Water level: ");
-  Serial.println(water);
+  if (WATER_ENABLED) {
+    Serial.print("Water level: ");
+    Serial.println(water);
+  }
   Serial.print("Pressure: ");
   Serial.println(pressure);
   
@@ -107,9 +113,11 @@ void loop() {
   }
 
   if (display_page == 1) {
-    lcd.setCursor(0, 0);
-    lcd.print("Water: ");
-    lcd.print(water);
+    if (WATER_ENABLED) {
+      lcd.setCursor(0, 0);
+      lcd.print("Water: ");
+      lcd.print(water);
+    }
     
     lcd.setCursor(0, 1);
     lcd.print("Pres: ");
