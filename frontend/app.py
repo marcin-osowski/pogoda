@@ -261,11 +261,9 @@ def root():
             get_latest_reading, client, "humidity")
         pres_and_date = executor.submit(
             get_latest_reading, client, "pressure")
-        futures.wait([temp_and_date, hmdt_and_date, pres_and_date])
-
-    temp, temp_date = temp_and_date.result()
-    hmdt, hmdt_date = hmdt_and_date.result()
-    pres, pres_date = pres_and_date.result()
+        temp, temp_date = temp_and_date.result()
+        hmdt, hmdt_date = hmdt_and_date.result()
+        pres, pres_date = pres_and_date.result()
 
     temp_ago = date_to_seconds_ago(temp_date)
     hmdt_ago = date_to_seconds_ago(hmdt_date)
@@ -309,20 +307,23 @@ def route_charts():
             get_last_readings, client, "pressure", timedelta(days=1))
         water_history = executor.submit(
             get_last_readings, client, "water_level", timedelta(days=1))
-        futures.wait([temp_history, hmdt_history, pres_history, water_history])
+        temp_history = temp_history.result()
+        hmdt_history = hmdt_history.result()
+        pres_history = pres_history.result()
+        water_history = water_history.result()
 
-    # Vapor pressure is computed from temperature and humidity.
-    vapor_pres_history = compute_vapor_pressure(
-        temp_history.result(), hmdt_history.result())
-
+    # Vapor pressure and dew point are computed
+    # from temperature and humidity.
+    vapor_pres_history = compute_vapor_pressure(temp_history, hmdt_history)
     dew_point_history = compute_dew_point(vapor_pres_history)
 
-    temp_history = apply_smoothing(temp_history.result(), minutes=10.1)
-    hmdt_history = apply_smoothing(hmdt_history.result(), minutes=20.1)
+    # Smoothen the data.
+    temp_history = apply_smoothing(temp_history, minutes=20.1)
+    hmdt_history = apply_smoothing(hmdt_history, minutes=20.1)
     vapor_pres_history = apply_smoothing(vapor_pres_history, minutes=30.1)
     dew_point_history = apply_smoothing(dew_point_history, minutes=30.1)
-    pres_history = apply_smoothing(pres_history.result(), minutes=20.1)
-    water_history = apply_smoothing(water_history.result(), minutes=20.1)
+    pres_history = apply_smoothing(pres_history, minutes=20.1)
+    water_history = apply_smoothing(water_history, minutes=20.1)
 
     return bottle.template("charts.tpl", dict(
         temp_history=temp_history,
