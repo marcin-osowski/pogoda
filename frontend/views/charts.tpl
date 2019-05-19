@@ -17,6 +17,7 @@
     var temp_options = {
       title: 'Temperature [°C]',
       legend: { position: 'none' },
+      chartArea: { width: '75%' },
     };
 
     var temp_chart = new google.visualization.LineChart(
@@ -34,6 +35,7 @@
     var hmdt_options = {
       title: 'Humidity [%]',
       legend: { position: 'none' },
+      chartArea: { width: '75%' },
     };
 
     var hmdt_chart = new google.visualization.LineChart(
@@ -51,6 +53,7 @@
     var vapor_pres_options = {
       title: 'Vapor pressure [hPa]',
       legend: { position: 'none' },
+      chartArea: { width: '75%' },
     };
 
     var vapor_pres_chart = new google.visualization.LineChart(
@@ -68,6 +71,7 @@
     var dew_point_options = {
       title: 'Dew point [°C]',
       legend: { position: 'none' },
+      chartArea: { width: '75%' },
     };
 
     var dew_point_chart = new google.visualization.LineChart(
@@ -85,6 +89,7 @@
     var pres_options = {
       title: 'Pressure [hPa]',
       legend: { position: 'none' },
+      chartArea: { width: '75%' },
     };
 
     var pres_chart = new google.visualization.LineChart(
