@@ -90,23 +90,6 @@
     var pres_chart = new google.visualization.LineChart(
         document.getElementById('pres_chart'));
     pres_chart.draw(pres_data, pres_options);
-
-    // Water level
-    var water_data = google.visualization.arrayToDataTable([
-      ['Time', 'Water level'],
-      % for row in water_history:
-        [new Date('{{ row[1].isoformat() }}'), {{ row[0] }}],
-      % end
-    ]);
-
-    var water_options = {
-      title: 'Water level',
-      legend: { position: 'none' },
-    };
-
-    var water_chart = new google.visualization.LineChart(
-        document.getElementById('water_chart'));
-    water_chart.draw(water_data, water_options);
   }
 </script>
 
@@ -116,6 +99,7 @@
 </section>
 
 <section id="pageContent">
+
   <article>
     <div id="temp_chart" style="width: 100%; min-height: 450px"></div>
   </article>
@@ -136,9 +120,6 @@
     <div id="pres_chart" style="width: 100%; min-height: 450px"></div>
   </article>
 
-  <article>
-    <div id="water_chart" style="width: 100%; min-height: 450px"></div>
-  </article>
 </section>
 
 %include footer
