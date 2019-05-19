@@ -35,7 +35,7 @@ def queue_producer_loop(data_queue):
     weather_data = data_source.WeatherDataSource
 
     # Sleep at start, so that the serial port values settle
-    time.sleep(5.0)
+    time.sleep(60.0)
 
     while True:
         try:
