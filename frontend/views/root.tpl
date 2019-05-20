@@ -36,7 +36,7 @@
 
       <!-- Pressure -->
       % if pres is not None:
-          <tr><td>PM 2.5 (test):</td><td>{{ pm_25 }} μg/m³ </td></tr>
+          <tr><td>PM 2.5, experimental:</td><td>{{ pm_25 }} μg/m³ </td></tr>
       % end
     </table>
     <p>&nbsp;</p>

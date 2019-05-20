@@ -316,9 +316,12 @@ def route_charts():
             get_last_readings, client, "humidity", timedelta(days=1))
         pres_history = executor.submit(
             get_last_readings, client, "pressure", timedelta(days=1))
+        pm_25_history = executor.submit(
+            get_last_readings, client, "pm_25_env", timedelta(days=1))
         temp_history = temp_history.result()
         hmdt_history = hmdt_history.result()
         pres_history = pres_history.result()
+        pm_25_history = pm_25_history.result()
 
     # Vapor pressure and dew point are computed
     # from temperature and humidity.
@@ -331,6 +334,7 @@ def route_charts():
     vapor_pres_history = apply_smoothing(vapor_pres_history, minutes=30.1)
     dew_point_history = apply_smoothing(dew_point_history, minutes=30.1)
     pres_history = apply_smoothing(pres_history, minutes=20.1)
+    pm_25_history = apply_smoothing(pm_25_history, minutes=40.1)
 
     # Wrap it together in a single list.
     chart_datas = []
@@ -349,6 +353,9 @@ def route_charts():
     chart_datas.append(ChartData(
         name="pres", description="Pressure [hPa]",
         history=pres_history))
+    chart_datas.append(ChartData(
+        name="pm_25", description="PM 2.5, experimental [μg/m³]",
+        history=pm_25_history))
 
     return bottle.template("charts.tpl", dict(
         chart_datas=chart_datas,
