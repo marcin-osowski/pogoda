@@ -83,7 +83,7 @@ class WeatherDataSource(object):
                     # Empty line (except for newline character).
                     continue
 
-                match = re.match("^([a-zA-Z ]+): ([0-9.]+)$", line)
+                match = re.match("^([^:]+): ([0-9.]+)$", line)
                 if not match:
                     # Damaged line.
                     continue
