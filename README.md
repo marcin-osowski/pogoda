@@ -11,3 +11,9 @@ Frontend: https://pogoda.osowski.info
    database (Python).
 3. `frontend/`: a web server, presents the data from the
    Datastore database (Python).
+
+## Used sensors
+1. Temperature and humidity:
+   [AM2301](https://kropochev.com/downloads/humidity/AM2301.pdf)
+2. Air pressure:
+   [BMP085](https://www.sparkfun.com/datasheets/Components/General/BST-BMP085-DS000-05.pdf)
