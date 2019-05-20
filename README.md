@@ -17,3 +17,5 @@ Frontend: https://pogoda.osowski.info
    [AM2301](https://kropochev.com/downloads/humidity/AM2301.pdf)
 2. Air pressure:
    [BMP085](https://www.sparkfun.com/datasheets/Components/General/BST-BMP085-DS000-05.pdf)
+3. Air quality (particulate matter):
+   [PMS5003](https://cdn-learn.adafruit.com/downloads/pdf/pm25-air-quality-sensor.pdf)
