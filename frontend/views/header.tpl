@@ -14,6 +14,8 @@
       <ul>
         <li><a href="/">Current reading</a>
         <li><a href="/charts">Charts</a>
+        <li><a href="https://github.com/xiadz/pogoda"
+                     target="_blank">GitHub</a>
       </ul>
     </nav>
   </header>
