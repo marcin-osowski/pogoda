@@ -261,9 +261,12 @@ def root():
             get_latest_reading, client, "humidity")
         pres_and_date = executor.submit(
             get_latest_reading, client, "pressure")
+        pm_25_and_date = executor.submit(
+            get_latest_reading, client, "pm_25_env")
         temp, temp_date = temp_and_date.result()
         hmdt, hmdt_date = hmdt_and_date.result()
         pres, pres_date = pres_and_date.result()
+        pm_25, pm_25_date = pm_25_and_date.result()
 
     temp_ago = date_to_seconds_ago(temp_date)
     hmdt_ago = date_to_seconds_ago(hmdt_date)
@@ -289,10 +292,18 @@ def root():
         vapor_pres=vapor_pres,
         dew_point=dew_point,
         pres=pres,
+        pm_25=pm_25,
         data_age=data_age,
         latency=latency.total,
     ))
 
+
+class ChartData(object):
+
+    def __init__(self, name, description, history):
+        self.name = name
+        self.description = description
+        self.history = history
 
 @app.get("/charts")
 def route_charts():
@@ -305,12 +316,9 @@ def route_charts():
             get_last_readings, client, "humidity", timedelta(days=1))
         pres_history = executor.submit(
             get_last_readings, client, "pressure", timedelta(days=1))
-        water_history = executor.submit(
-            get_last_readings, client, "water_level", timedelta(days=1))
         temp_history = temp_history.result()
         hmdt_history = hmdt_history.result()
         pres_history = pres_history.result()
-        water_history = water_history.result()
 
     # Vapor pressure and dew point are computed
     # from temperature and humidity.
@@ -323,15 +331,27 @@ def route_charts():
     vapor_pres_history = apply_smoothing(vapor_pres_history, minutes=30.1)
     dew_point_history = apply_smoothing(dew_point_history, minutes=30.1)
     pres_history = apply_smoothing(pres_history, minutes=20.1)
-    water_history = apply_smoothing(water_history, minutes=20.1)
+
+    # Wrap it together in a single list.
+    chart_datas = []
+    chart_datas.append(ChartData(
+        name="temp", description="Temperature [°C]",
+        history=temp_history))
+    chart_datas.append(ChartData(
+        name="hmdt", description="Humidity [%]",
+        history=hmdt_history))
+    chart_datas.append(ChartData(
+        name="vapor_pres", description="Vapor pressure [hPa]",
+        history=vapor_pres_history))
+    chart_datas.append(ChartData(
+        name="dew_point", description="Dew point [°C]",
+        history=dew_point_history))
+    chart_datas.append(ChartData(
+        name="pres", description="Pressure [hPa]",
+        history=pres_history))
 
     return bottle.template("charts.tpl", dict(
-        temp_history=temp_history,
-        hmdt_history=hmdt_history,
-        vapor_pres_history=vapor_pres_history,
-        dew_point_history=dew_point_history,
-        pres_history=pres_history,
-        water_history=water_history,
+        chart_datas=chart_datas,
         latency=latency.total,
     ))
 

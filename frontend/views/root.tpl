@@ -31,6 +31,13 @@
       % if pres is not None:
           <tr><td>Pressure:</td><td>{{ pres }} hPa</td></tr>
       % end
+
+      <tr><td colspan=2></td></tr>
+
+      <!-- Pressure -->
+      % if pres is not None:
+          <tr><td>PM 2.5 (test):</td><td>{{ pm_25 }} μg/m³ </td></tr>
+      % end
     </table>
     <p>&nbsp;</p>
     <p>&nbsp;</p>
