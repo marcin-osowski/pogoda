@@ -11,7 +11,7 @@ Units:
   - Temperature: degrees Celsius
   - Water level: raw analog pin reading
   - Pressure: hPa
-  - PM 1.0, 2.5, 10.0: ug/m3
+  - PM 1.0, PM 2.5, PM 10.0: ug/m3
 
 Pin layout (for Arduino Nano):
   - A0: water level sensor analog output
