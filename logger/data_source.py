@@ -77,7 +77,7 @@ class WeatherDataSource(object):
             while True:
                 line = stream.readline()
                 if not line:
-                    raise RuntimeError("Input stream %s was terminated")
+                    raise RuntimeError("Input stream %s was terminated" % config.COMM_PORT)
                 line = line.strip()
                 if not line:
                     # Empty line (except for newline character).
