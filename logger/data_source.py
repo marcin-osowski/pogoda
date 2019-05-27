@@ -4,7 +4,6 @@ import io
 import re
 import threading
 import time
-import traceback
 
 import config
 

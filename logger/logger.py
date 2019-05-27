@@ -6,7 +6,6 @@ import os
 import queue
 import threading
 import time
-import traceback
 
 import config
 import instance_config
