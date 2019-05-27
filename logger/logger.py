@@ -53,9 +53,9 @@ def readings_queue_producer_loop():
                 pass
             else:
                 get_and_push_readings_queue(weather_data, readings_queue)
-        except:
+        except Exception as e:
             print("Problem while inserting data to the readings queue.")
-            traceback.print_exc()
+            print(e)
             time.sleep(60.0)
 
 
@@ -88,9 +88,9 @@ def readings_queue_consumer_loop():
                     if not written:
                         # Put back in the readings queue
                         readings_queue.put((name, value, timestamp))
-        except:
+        except Exception as e:
             print("Problem while inserting data into the DB.")
-            traceback.print_exc()
+            print(e)
             time.sleep(120.0)
 
 

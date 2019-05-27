@@ -63,9 +63,9 @@ class WeatherDataSource(object):
         while True:
             try:
                 WeatherDataSource._stream_reader()
-            except:
+            except Exception as e:
                 print("Problem while reading %s" % config.COMM_PORT)
-                traceback.print_exc()
+                print(e)
                 time.sleep(30.0)
             print("Re-starting data source stream reader.")
 
