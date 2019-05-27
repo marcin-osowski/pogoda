@@ -1,7 +1,12 @@
 # Database settings.
 GCP_CREDENTIALS="./gcp-credentials.json"
 GCP_PROJECT="pogoda-240600"
-GCP_KIND_PREFIX="reading:"
+
+# GCP kinds for data.
+GCP_TEMP_KIND="wczasowa:ground_level:reading:temperature"
+GCP_HMDT_KIND="wczasowa:ground_level:reading:humidity"
+GCP_PRES_KIND="wczasowa:ground_level:reading:pressure"
+GCP_PM25_KIND="wczasowa:ground_level:reading:pm_25_env"
 
 # Web server settings.
 PROD_HTTP_HOST='127.0.0.1'

@@ -9,6 +9,7 @@ import time
 import traceback
 
 import config
+import instance_config
 import data_source
 
 
@@ -55,7 +56,10 @@ def queue_producer_loop(data_queue):
 
 def insert_into_db(client, name, value, timestamp):
     """Inserts a single reading into the DB."""
-    key = client.key(config.GCP_KIND_PREFIX + name)
+    key = client.key(
+        instance_config.GCP_INSTANCE_NAME_PREFIX +
+        config.GCP_READING_PREFIX +
+        name)
     reading_ent = datastore.Entity(key)
     reading_ent.update(dict(
         timestamp=timestamp,

@@ -28,4 +28,4 @@ MAX_QUEUE_SIZE=1024*1024
 # Database settings.
 GCP_CREDENTIALS="./gcp-credentials.json"
 GCP_PROJECT="pogoda-240600"
-GCP_KIND_PREFIX="reading:"
+GCP_READING_PREFIX="reading:"
