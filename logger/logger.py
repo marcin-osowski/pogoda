@@ -25,7 +25,7 @@ def create_datastore_client():
 
 def get_and_push_readings_queue(weather_data):
     """Retrieves data and inserts it into the readings queue, once."""
-    for comm_name, name in config.NAME_TRANSLATION.items():
+    for comm_name, name in config.GCP_READING_NAME_TRANSLATION.items():
         value, timestamp = weather_data.readings[comm_name].get_with_timestamp()
         if value is None:
             # Value is missing, ignore.

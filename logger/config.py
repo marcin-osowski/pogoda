@@ -1,6 +1,21 @@
 COMM_PORT="/dev/ttyUSB0"
 LOGGER_INTERVAL_SEC=120
-NAME_TRANSLATION={
+
+# Limits RAM usage in case of DB unreachability.
+# Approximate limit.
+MAX_QUEUE_SIZE=1024*1024
+
+# Database settings.
+GCP_CREDENTIALS="./gcp-credentials.json"
+GCP_PROJECT="pogoda-240600"
+
+# Database schema settings.
+# The entity kind for a sensor reading is fully specified as:
+#    instance_config.GCP_INSTANCE_NAME_PREFIX +
+#    GCP_READING_PREFIX +
+#    GCP_READING_NAME_TRANSLATION.value
+GCP_READING_PREFIX="reading:"
+GCP_READING_NAME_TRANSLATION={
     "Humidity": "humidity",
     "Temperature": "temperature",
     "Water level": "water_level",
@@ -20,12 +35,3 @@ NAME_TRANSLATION={
     "Particles > 5.0um / 0.1L air": "particles_50",
     "Particles > 10.0 um / 0.1L air": "particles_100",
 }
-
-# Limits RAM usage in case of DB unreachability.
-# Approximate limit.
-MAX_QUEUE_SIZE=1024*1024
-
-# Database settings.
-GCP_CREDENTIALS="./gcp-credentials.json"
-GCP_PROJECT="pogoda-240600"
-GCP_READING_PREFIX="reading:"
