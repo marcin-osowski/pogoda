@@ -391,8 +391,11 @@ def route_devices():
             client, config.GCP_GROUND_LATENCY_KIND,
             timedelta(days=7))
 
+    current_time = datetime.now(timezone.utc)
+
     return bottle.template("devices.tpl", dict(
         ground_latency=ground_latency,
+        current_time=current_time,
         latency=latency.total,
     ))
 
