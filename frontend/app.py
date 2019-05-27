@@ -53,6 +53,23 @@ def get_latest_reading(client, name):
     return value, timestamp
 
 
+def get_internet_latency_data(client, kind, timedelta):
+    minimum_time = datetime.now(timezone.utc) - timedelta
+    query = client.query(kind=kind)
+    query.add_filter("timestamp", ">=", minimum_time)
+    query.order = ["timestamp"]
+    parsed_results = []
+    for entity in query.fetch():
+        if "timestamp" not in entity:
+            continue
+        timestamp = entity["timestamp"]
+        value = None
+        if "value" in entity:
+            value = entity["value"]
+        parsed_results.append((value, timestamp))
+    return parsed_results
+
+
 def get_last_readings(client, name, timedelta):
     """Returns values and timestamps of recent readings."""
     minimum_time = datetime.now(timezone.utc) - timedelta
@@ -359,6 +376,20 @@ def route_charts():
 
     return bottle.template("charts.tpl", dict(
         chart_datas=chart_datas,
+        latency=latency.total,
+    ))
+
+
+@app.get("/devices")
+def route_devices():
+    latency = BackendLatencyTimer()
+    with latency:
+        client = create_datastore_client()
+        ground_latency = get_internet_latency_data(
+            client, config.GCP_GROUND_LATENCY_KIND,
+            timedelta(days=7))
+    return bottle.template("devices.tpl", dict(
+        ground_latency=ground_latency,
         latency=latency.total,
     ))
 
