@@ -36,7 +36,7 @@ def create_datastore_client():
 
 def get_latest_reading(client, name):
     """Returns the value and timestamp of the latest reading."""
-    query = client.query(kind=config.GCP_KIND_PREFIX + name)
+    query = client.query(kind=name)
     query.order = ["-timestamp"]
     results = list(query.fetch(limit=1))
 
@@ -56,7 +56,7 @@ def get_latest_reading(client, name):
 def get_last_readings(client, name, timedelta):
     """Returns values and timestamps of recent readings."""
     minimum_time = datetime.now(timezone.utc) - timedelta
-    query = client.query(kind=config.GCP_KIND_PREFIX + name)
+    query = client.query(kind=name)
     query.add_filter("timestamp", ">=", minimum_time)
     query.order = ["timestamp"]
     parsed_results = []
@@ -256,13 +256,13 @@ def root():
     with latency:
         client = create_datastore_client()
         temp_and_date = executor.submit(
-            get_latest_reading, client, "temperature")
+            get_latest_reading, client, config.GCP_TEMP_KIND)
         hmdt_and_date = executor.submit(
-            get_latest_reading, client, "humidity")
+            get_latest_reading, client, config.GCP_HMDT_KIND)
         pres_and_date = executor.submit(
-            get_latest_reading, client, "pressure")
+            get_latest_reading, client, config.GCP_PRES_KIND)
         pm_25_and_date = executor.submit(
-            get_latest_reading, client, "pm_25_env")
+            get_latest_reading, client, config.GCP_PM25_KIND)
         temp, temp_date = temp_and_date.result()
         hmdt, hmdt_date = hmdt_and_date.result()
         pres, pres_date = pres_and_date.result()
@@ -311,13 +311,13 @@ def route_charts():
     with latency:
         client = create_datastore_client()
         temp_history = executor.submit(
-            get_last_readings, client, "temperature", timedelta(days=1))
+            get_last_readings, client, config.GCP_TEMP_KIND, timedelta(days=1))
         hmdt_history = executor.submit(
-            get_last_readings, client, "humidity", timedelta(days=1))
+            get_last_readings, client, config.GCP_HMDT_KIND, timedelta(days=1))
         pres_history = executor.submit(
-            get_last_readings, client, "pressure", timedelta(days=1))
+            get_last_readings, client, config.GCP_PRES_KIND, timedelta(days=1))
         pm_25_history = executor.submit(
-            get_last_readings, client, "pm_25_env", timedelta(days=1))
+            get_last_readings, client, config.GCP_PM25_KIND, timedelta(days=1))
         temp_history = temp_history.result()
         hmdt_history = hmdt_history.result()
         pres_history = pres_history.result()
