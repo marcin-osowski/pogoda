@@ -51,7 +51,7 @@ def readings_queue_producer_loop():
                 # Dropping data, queue too long.
                 pass
             else:
-                get_and_push_readings_queue(weather_data, readings_queue)
+                get_and_push_readings_queue(weather_data)
         except Exception as e:
             print("Problem while inserting data to the readings queue.")
             print(e)
