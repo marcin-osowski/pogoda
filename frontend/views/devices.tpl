@@ -17,6 +17,7 @@
       title: 'Ground level weather sensor Internet connection latency [ms]',
       legend: { position: 'none' },
       chartArea: { width: '75%' },
+      hAxis: { maxValue: new Date('{{ current_time.isoformat() }}') },
     };
 
     var chart = new google.visualization.LineChart(

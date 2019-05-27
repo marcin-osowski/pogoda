@@ -58,6 +58,7 @@ def get_internet_latency_data(client, kind, timedelta):
     query = client.query(kind=kind)
     query.add_filter("timestamp", ">=", minimum_time)
     query.order = ["timestamp"]
+
     parsed_results = []
     for entity in query.fetch():
         if "timestamp" not in entity:
@@ -76,6 +77,7 @@ def get_last_readings(client, name, timedelta):
     query = client.query(kind=name)
     query.add_filter("timestamp", ">=", minimum_time)
     query.order = ["timestamp"]
+
     parsed_results = []
     for entity in query.fetch():
         if "value" not in entity:
@@ -388,8 +390,12 @@ def route_devices():
         ground_latency = get_internet_latency_data(
             client, config.GCP_GROUND_LATENCY_KIND,
             timedelta(days=7))
+
+    current_time = datetime.now(timezone.utc)
+
     return bottle.template("devices.tpl", dict(
         ground_latency=ground_latency,
+        current_time=current_time,
         latency=latency.total,
     ))
 
