@@ -7,7 +7,7 @@ def get_host_latency(target, timeout_sec):
 
     Returns None if there's no response within the timeout."""
     try:
-        ping_result = sh.ping(target, c=1, t=timeout_sec)
+        ping_result = sh.ping(target, c=1, W=timeout_sec)
     except:
         # Ignore exceptions.
         ping_result = ""

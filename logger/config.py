@@ -1,7 +1,11 @@
+# The port with Arduino data.
 COMM_PORT="/dev/ttyUSB0"
+
+# Interval for writing data to the DB.
 LOGGER_INTERVAL_SEC=120
 
 # Limits RAM usage in case of DB unreachability.
+# Applies separately to each write queue.
 # Approximate limit.
 MAX_QUEUE_SIZE=1024*1024
 
@@ -10,6 +14,7 @@ GCP_CREDENTIALS="./gcp-credentials.json"
 GCP_PROJECT="pogoda-240600"
 
 # Database schema settings.
+
 # The entity kind for a sensor reading is fully specified as:
 #    instance_config.GCP_INSTANCE_NAME_PREFIX +
 #    GCP_READING_PREFIX +
@@ -35,3 +40,9 @@ GCP_READING_NAME_TRANSLATION={
     "Particles > 5.0um / 0.1L air": "particles_50",
     "Particles > 10.0 um / 0.1L air": "particles_100",
 }
+
+# The entity kind for connection quality data is fully specified as:
+#    instance_config.GCP_INSTANCE_NAME_PREFIX +
+#    GCP_CONN_QUALITY_PREFIX +
+#    "internet_latency"
+GCP_CONN_QUALITY_PREFIX="connection:"
