@@ -9,7 +9,8 @@
     var data = google.visualization.arrayToDataTable([
       ['Time', 'Internet latency [ms]'],
       % for value, timestamp in ground_latency:
-        [new Date('{{ timestamp.isoformat() }}'), {{ value * 1000.0 if value is not None else "null" }}],
+        [new Date('{{ timestamp.isoformat() }}'),
+         {{ value * 1000.0 if value is not None else "null" }}],
       % end
     ]);
 

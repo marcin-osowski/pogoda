@@ -66,8 +66,9 @@ def readings_queue_producer_loop():
 
 def get_and_push_conn_quality():
     internet_latency = ping.get_internet_latency()
-    timestamp = datetime.datetime.utcnow()
-    conn_quality_queue.put(("internet_latency", internet_latency, timestamp))
+    if internet_latency is not None:
+        timestamp = datetime.datetime.utcnow()
+        conn_quality_queue.put(("internet_latency", internet_latency, timestamp))
 
 
 def conn_quality_queue_producer_loop():

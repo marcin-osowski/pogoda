@@ -11,7 +11,8 @@
         var data = google.visualization.arrayToDataTable([
           ['Time', '{{ chart_data.description }}'],
           % for row in chart_data.history:
-            [new Date('{{ row[1].isoformat() }}'), {{ row[0] }}],
+            [new Date('{{ row[1].isoformat() }}'),
+             {{ row[0] if row[0] is not None else "null" }}],
           % end
         ]);
 

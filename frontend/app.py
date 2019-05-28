@@ -125,6 +125,27 @@ def apply_smoothing(readings, minutes):
     return output_readings
 
 
+def insert_gaps(readings, min_gap_minutes):
+    """Inserts gaps into the readings.
+
+    If there's a reading gap of at least `min_gap_minutes` minutes."""
+    output_readings = []
+    if not readings:
+        return output_readings
+    output_readings.append(readings[0])
+    for i in range(1, len(readings)):
+        _, prev_timestamp = readings[i - 1]
+        curr_value, curr_timestamp = readings[i]
+        minutes_passed = (curr_timestamp - prev_timestamp).total_seconds() / 60.0
+        if minutes_passed > min_gap_minutes:
+            gap_delay = timedelta(minutes=(minutes_passed / 2.0))
+            gap_timestamp = prev_timestamp + gap_delay
+            output_readings.append((None, gap_timestamp))
+        output_readings.append((curr_value, curr_timestamp))
+
+    return output_readings
+
+
 def round_datetime(dt, minutes):
     discard = timedelta(
         minutes=dt.minute % minutes,
@@ -355,6 +376,14 @@ def route_charts():
     pres_history = apply_smoothing(pres_history, minutes=20.1)
     pm_25_history = apply_smoothing(pm_25_history, minutes=40.1)
 
+    # Insert gaps.
+    temp_history = insert_gaps(temp_history, min_gap_minutes=20.1)
+    hmdt_history = insert_gaps(hmdt_history, min_gap_minutes=20.1)
+    vapor_pres_history = insert_gaps(vapor_pres_history, min_gap_minutes=20.1)
+    dew_point_history = insert_gaps(dew_point_history, min_gap_minutes=20.1)
+    pres_history = insert_gaps(pres_history, min_gap_minutes=20.1)
+    pm_25_history = insert_gaps(pm_25_history, min_gap_minutes=20.1)
+
     # Wrap it together in a single list.
     chart_datas = []
     chart_datas.append(ChartData(
@@ -393,6 +422,8 @@ def route_devices():
         ground_latency = get_internet_latency_data(
             client, config.GCP_GROUND_LATENCY_KIND,
             timedelta(days=7))
+
+    ground_latency = insert_gaps(ground_latency, min_gap_minutes=20.1)
 
     current_time = datetime.now(timezone.utc)
 
