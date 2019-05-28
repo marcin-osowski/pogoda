@@ -376,8 +376,11 @@ def route_charts():
         name="pm_25", description="PM 2.5, experimental [μg/m³]",
         history=pm_25_history))
 
+    current_time = datetime.now(timezone.utc)
+
     return bottle.template("charts.tpl", dict(
         chart_datas=chart_datas,
+        current_time=current_time,
         latency=latency.total,
     ))
 
