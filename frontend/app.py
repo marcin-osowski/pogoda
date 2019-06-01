@@ -53,10 +53,10 @@ def get_latest_reading(client, name):
     return value, timestamp
 
 
-def get_internet_latency_data(client, kind, timedelta):
-    minimum_time = datetime.now(timezone.utc) - timedelta
+def get_internet_latency_data(client, kind, time_from, time_to):
     query = client.query(kind=kind)
-    query.add_filter("timestamp", ">=", minimum_time)
+    query.add_filter("timestamp", ">=", time_from)
+    query.add_filter("timestamp", "<=", time_to)
     query.order = ["timestamp"]
 
     parsed_results = []
@@ -71,11 +71,11 @@ def get_internet_latency_data(client, kind, timedelta):
     return parsed_results
 
 
-def get_last_readings(client, name, timedelta):
+def get_last_readings(client, name, time_from, time_to):
     """Returns values and timestamps of recent readings."""
-    minimum_time = datetime.now(timezone.utc) - timedelta
     query = client.query(kind=name)
-    query.add_filter("timestamp", ">=", minimum_time)
+    query.add_filter("timestamp", ">=", time_from)
+    query.add_filter("timestamp", "<=", time_to)
     query.order = ["timestamp"]
 
     parsed_results = []
@@ -348,16 +348,22 @@ class ChartData(object):
 @app.get("/charts")
 def route_charts():
     latency = BackendLatencyTimer()
+    time_to = datetime.now(timezone.utc)
+    time_from = time_to - timedelta(days=1)
     with latency:
         client = create_datastore_client()
         temp_history = executor.submit(
-            get_last_readings, client, config.GCP_TEMP_KIND, timedelta(days=1))
+            get_last_readings, client, config.GCP_TEMP_KIND,
+            time_from, time_to)
         hmdt_history = executor.submit(
-            get_last_readings, client, config.GCP_HMDT_KIND, timedelta(days=1))
+            get_last_readings, client, config.GCP_HMDT_KIND,
+            time_from, time_to)
         pres_history = executor.submit(
-            get_last_readings, client, config.GCP_PRES_KIND, timedelta(days=1))
+            get_last_readings, client, config.GCP_PRES_KIND,
+            time_from, time_to)
         pm_25_history = executor.submit(
-            get_last_readings, client, config.GCP_PM25_KIND, timedelta(days=1))
+            get_last_readings, client, config.GCP_PM25_KIND,
+            time_from, time_to)
         temp_history = temp_history.result()
         hmdt_history = hmdt_history.result()
         pres_history = pres_history.result()
@@ -405,11 +411,10 @@ def route_charts():
         name="pm_25", description="PM 2.5, experimental [μg/m³]",
         history=pm_25_history))
 
-    current_time = datetime.now(timezone.utc)
-
     return bottle.template("charts.tpl", dict(
         chart_datas=chart_datas,
-        current_time=current_time,
+        time_from=time_from,
+        time_to=time_to,
         latency=latency.total,
     ))
 
@@ -417,19 +422,20 @@ def route_charts():
 @app.get("/devices")
 def route_devices():
     latency = BackendLatencyTimer()
+    time_to = datetime.now(timezone.utc)
+    time_from = time_to - timedelta(days=7)
     with latency:
         client = create_datastore_client()
         ground_latency = get_internet_latency_data(
             client, config.GCP_GROUND_LATENCY_KIND,
-            timedelta(days=7))
+            time_from, time_to)
 
     ground_latency = insert_gaps(ground_latency, min_gap_minutes=20.1)
 
-    current_time = datetime.now(timezone.utc)
-
     return bottle.template("devices.tpl", dict(
         ground_latency=ground_latency,
-        current_time=current_time,
+        time_from=time_from,
+        time_to=time_to,
         latency=latency.total,
     ))
 
