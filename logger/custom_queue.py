@@ -46,7 +46,7 @@ class CustomQueue(object):
     def qsize(self):
         """Returns approximate size of the queue."""
         with self._cv:
-        return len(self._data)
+            return len(self._data)
 
     # Private methods
     def _queue_empty(self):

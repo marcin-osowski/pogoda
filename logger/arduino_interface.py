@@ -117,7 +117,11 @@ def scrape_readings_once(data_queue):
         kind = (instance_config.GCP_INSTANCE_NAME_PREFIX +
                 config.GCP_READING_PREFIX +
                 name)
-        data_queue.put(timestamp, kind, value)
+        data_queue.put(
+            timestamp=timestamp,
+            kind=kind,
+            value=value,
+        )
 
 
 def arduino_scraper_loop(data_queue):
