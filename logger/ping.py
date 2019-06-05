@@ -78,12 +78,12 @@ def conn_quality_scraper_loop(data_queue):
 
     while True:
         try:
+            time.sleep(config.LOGGER_INTERVAL_SEC)
             if data_queue.qsize() >= config.MAX_QUEUE_SIZE:
                 # Dropping data, queue too long
                 pass
             else:
                 scrape_conn_quality_once(data_queue)
-            time.sleep(config.LOGGER_INTERVAL_SEC)
         except Exception as e:
             print("Problem while getting connection quality data.")
             print(e)
