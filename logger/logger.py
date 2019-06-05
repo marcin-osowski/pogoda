@@ -37,9 +37,9 @@ if __name__ == "__main__":
     cloud_uploader_thread.setDaemon(True)
     cloud_uploader_thread.start()
 
+    time.sleep(10.0)
     while True:
         try:
-            time.sleep(5.0)
             input("Press enter to show stats ")
             print()
             print("Queue length:", data_queue.qsize())
