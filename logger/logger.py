@@ -19,7 +19,7 @@ if __name__ == "__main__":
 
     def thread_kickoff(target):
         thread = threading.Thread(
-            target=func,
+            target=target,
             kwargs=dict(data_queue=data_queue)
         )
         thread.setDaemon(True)
