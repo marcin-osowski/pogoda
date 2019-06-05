@@ -1,12 +1,10 @@
 # The port with Arduino data.
 COMM_PORT="/dev/ttyUSB0"
 
-# Interval for writing data to the DB.
+# Interval for scraping the readings data.
 LOGGER_INTERVAL_SEC=120
 
 # Limits RAM usage in case of DB unreachability.
-# Applies separately to each write queue.
-# Approximate limit.
 MAX_QUEUE_SIZE=256*1024
 
 # Database settings.
