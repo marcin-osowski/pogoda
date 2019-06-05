@@ -29,7 +29,7 @@ def insert_into_cloud_db(client, timestamp, kind, value):
     client.put(reading_ent)
 
 
-def queue_consumer_loop(data_queue):
+def cloud_uploader_loop(data_queue):
     """A loop: popping items from queue, inserting them into the cloud DB."""
     while True:
         try:
@@ -71,4 +71,19 @@ if __name__ == "__main__":
     conn_quality_scraper_thread.start()
 
     # Start popping items from the readings queue and inserting them into the DB.
-    queue_consumer_loop(data_queue=data_queue)
+    cloud_uploader_thread = threading.Thread(
+        target=cloud_uploader_loop,
+        kwargs=dict(data_queue=data_queue)
+    )
+    cloud_uploader_thread.setDaemon(True)
+    cloud_uploader_thread.start()
+
+    while True:
+        try:
+            time.sleep(5.0)
+            input("Press enter to show stats ")
+            print()
+            print("Queue length:", data_queue.qsize())
+            print()
+        except Exception as e:
+            print(e)
