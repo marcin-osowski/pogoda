@@ -15,36 +15,53 @@ class CustomQueue(object):
     def __init__(self):
         self._cv = threading.Condition()
         self._data = []
-        self._total_elements_put = 0
+        self._total_new_elements_put = 0
 
-    def put(self, timestamp, kind, value):
-        """Inserts one element into the queue."""
+    def put_return(self, timestamp, kind, value):
+        """Return one element to the queue."""
         with self._cv:
             self._data.append((timestamp, kind, value))
-            self._total_elements_put += 1
+            self._sort_items()
+            self._cv.notify(n=1)
+
+    def put_new(self, timestamp, kind, value):
+        """Inserts one new element into the queue."""
+        with self._cv:
+            self._data.append((timestamp, kind, value))
+            self._sort_items()
+            self._total_new_elements_put += 1
             self._cv.notify(n=1)
 
     def get_youngest(self):
         """Retrieves one element from the queue (with largest timestamp).
-        
+
         Blocks if there's no element.
         """
         with self._cv:
             while self._queue_empty():
                 self._cv.wait()
-            self._sort_items()
             timestamp, kind, value = self._data.pop(-1)
             return timestamp, kind, value
 
     def get_oldest(self):
         """Retrieves one element from the queue (with smallest timestamp).
-        
+
         Blocks if there's no element.
         """
         with self._cv:
             while self._queue_empty():
                 self._cv.wait()
-            self._sort_items()
+            timestamp, kind, value = self._data.pop(0)
+            return timestamp, kind, value
+
+    def get_oldest_nowait(self):
+        """Retrieves one element from the queue (with smallest timestamp).
+
+        Returns None if the queue is empty.
+        """
+        with self._cv:
+            if not self._data:
+                return None
             timestamp, kind, value = self._data.pop(0)
             return timestamp, kind, value
 
@@ -53,10 +70,10 @@ class CustomQueue(object):
         with self._cv:
             return len(self._data)
 
-    def total_elements_put(self):
-        """Returns the approximate total amount of elements put."""
+    def total_new_elements_put(self):
+        """Returns the approximate amount of new elements put."""
         with self._cv:
-            return self._total_elements_put
+            return self._total_new_elements_put
 
     # Private methods
     def _queue_empty(self):

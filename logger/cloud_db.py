@@ -35,7 +35,7 @@ def cloud_uploader_loop(data_queue):
                 finally:
                     if not written:
                         # Put back in the readings queue
-                        data_queue.put(timestamp, kind, value)
+                        data_queue.put_return(timestamp, kind, value)
         except Exception as e:
             print("Problem while inserting data into the cloud DB.")
             print(e)

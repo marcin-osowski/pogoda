@@ -17,10 +17,11 @@ if __name__ == "__main__":
     # A queue with data to be written to the DB.
     data_queue = custom_queue.CustomQueue()
 
-    def thread_kickoff(target):
+    def thread_kickoff(target, **kwargs):
+        kwargs["data_queue"] = data_queue
         thread = threading.Thread(
             target=target,
-            kwargs=dict(data_queue=data_queue)
+            kwargs=kwargs,
         )
         thread.setDaemon(True)
         thread.start()
@@ -53,11 +54,19 @@ if __name__ == "__main__":
             input("Press enter to show stats ")
             print()
 
+            # Gather data.
+            elements_in_queue = data_queue.qsize()
+            new_elements_put = data_queue.total_new_elements_put()
+            sqlite_elements = db_buffer.count_sqlite_elements()
             time_running = datetime.now(timezone.utc) - timestamp_start
 
-            print("Elements currently in the queue:", data_queue.qsize())
-            print("Total elements put in the queue:", data_queue.total_elements_put())
-            print("Time running:", time_running)
+            # Show it
+            print("Elements currently in the queue:", elements_in_queue)
+            print("Total new elements put in the queue:", new_elements_put)
+            print("Elements in the SQLite DB:", sqlite_elements)
+            print("Program running (time):", time_running)
             print()
+
         except Exception as e:
+            print("Problem in the user menu")
             print(e)

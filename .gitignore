@@ -1,3 +1,6 @@
 *.pyc
 .*.swp
 gcp-credentials.json
+
+logger/instance_config.py
+logger/buffer_db.sqlite3

@@ -27,14 +27,14 @@ MAX_QUEUE_SIZE=256*1024
 
 # Local SQLite database settings.
 # Used to buffer data.
-SQLITE_DB_FILENAME="buffer_db.sqlite3"
+SQLITE_DB_FILENAME="db_buffer.sqlite3"
 
 # Full file path for the SQLite DB.
 SQLITE_DB_FILE=os.path.join((os.path.dirname(os.path.realpath(__file__))), SQLITE_DB_FILENAME)
 
 # Start moving items from the queue to the sqlite DB
 # when queue gets this long, or longer.
-SQLITE_DUMP_QUEUE_LENGTH=500
+SQLITE_DUMP_QUEUE_LENGTH=300
 
 # Dump this many items at once.
 SQLITE_DUMP_AMOUNT=100
@@ -44,7 +44,7 @@ SQLITE_DUMP_AMOUNT=100
 SQLITE_FETCH_QUEUE_LENGTH=50
 
 # Fetch this many items at once.
-SQLITE_FETCH_AMOUNT=100
+SQLITE_FETCH_AMOUNT=75
 
 
 #

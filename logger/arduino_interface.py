@@ -117,7 +117,7 @@ def scrape_readings_once(data_queue):
         kind = (instance_config.GCP_INSTANCE_NAME_PREFIX +
                 config.GCP_READING_PREFIX +
                 name)
-        data_queue.put(
+        data_queue.put_new(
             timestamp=timestamp,
             kind=kind,
             value=value,
