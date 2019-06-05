@@ -64,7 +64,7 @@ def scrape_conn_quality_once(data_queue):
         kind = (instance_config.GCP_INSTANCE_NAME_PREFIX +
                 config.GCP_CONN_QUALITY_PREFIX +
                 "internet_latency")
-        data_queue.put((kind, timestamp, internet_latency))
+        data_queue.put(timestamp, kind, internet_latency))
 
 
 def conn_quality_scraper_loop(data_queue):

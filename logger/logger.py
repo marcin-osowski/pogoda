@@ -3,12 +3,12 @@
 import datetime
 from google.cloud import datastore
 import os
-import queue
 import threading
 import time
 
 import arduino_interface
 import config
+import custom_queue
 import instance_config
 import ping
 
@@ -19,7 +19,7 @@ def create_datastore_client():
     return datastore.Client(project=config.GCP_PROJECT)
 
 
-def insert_into_cloud_db(client, kind, timestamp, value):
+def insert_into_cloud_db(client, timestamp, kind, value):
     """Inserts a single entry into the cloud DB."""
     key = client.key(kind)
     reading_ent = datastore.Entity(key)
@@ -35,15 +35,15 @@ def queue_consumer_loop(data_queue):
         try:
             client = create_datastore_client()
             while True:
-                kind, timestamp, value = data_queue.get()
+                timestamp, kind, value = data_queue.get_youngest()
                 written = False
                 try:
-                    insert_into_cloud_db(client, kind, timestamp, value)
+                    insert_into_cloud_db(client, timestamp, kind, value)
                     written = True
                 finally:
                     if not written:
                         # Put back in the readings queue
-                        readings_queue.put((kind, timestamp, value))
+                        data_queue.put(timestamp, kind, value)
         except Exception as e:
             print("Problem while inserting data into the cloud DB.")
             print(e)
@@ -52,8 +52,7 @@ def queue_consumer_loop(data_queue):
 
 if __name__ == "__main__":
     # A queue with data to be written to the DB.
-    # Triples: {DB kind (name), timestamp, value}
-    data_queue = queue.Queue()
+    data_queue = custom_queue.CustomQueue()
 
     # Start a thread to scrape Arduino data.
     arduino_scraper_thread = threading.Thread(
