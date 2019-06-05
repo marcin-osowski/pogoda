@@ -1,17 +1,63 @@
-# The port with Arduino data.
+import os.path
+
+
+#
+# ARDUINO
+#
+
+# The port with Arduino data stream.
 COMM_PORT="/dev/ttyUSB0"
 
-# Interval for scraping the readings data.
+# Interval for scraping the Arduino readings data.
 LOGGER_INTERVAL_SEC=120
 
+
+#
+# IN-MEMORY QUEUE
+#
+
 # Limits RAM usage in case of DB unreachability.
+# Approximate limit.
 MAX_QUEUE_SIZE=256*1024
 
-# Database settings.
+
+#
+# LOCAL DISK DATABASE BUFFER
+#
+
+# Local SQLite database settings.
+# Used to buffer data.
+SQLITE_DB_FILENAME="buffer_db.sqlite3"
+
+# Full file path for the SQLite DB.
+SQLITE_DB_FILE=os.path.join((os.path.dirname(os.path.realpath(__file__))), SQLITE_DB_FILENAME)
+
+# Start moving items from the queue to the sqlite DB
+# when queue gets this long, or longer.
+SQLITE_DUMP_QUEUE_LENGTH=500
+
+# Dump this many items at once.
+SQLITE_DUMP_AMOUNT=100
+
+# Start fetching items from SQLite into the
+# queue when it gets this short, or shorter.
+SQLITE_FETCH_QUEUE_LENGTH=50
+
+# Fetch this many items at once.
+SQLITE_FETCH_AMOUNT=100
+
+
+#
+# CLOUD DATABASE
+#
+
+# Credentials to authenticate.
 GCP_CREDENTIALS="./gcp-credentials.json"
+
+# GCP project.
 GCP_PROJECT="pogoda-240600"
 
-# Database schema settings.
+# Cloud database schema settings.
 
 # The entity kind for a sensor reading is fully specified as:
 #    instance_config.GCP_INSTANCE_NAME_PREFIX +

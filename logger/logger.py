@@ -7,6 +7,7 @@ import time
 import arduino_interface
 import cloud_db
 import custom_queue
+import db_buffer
 import ping
 
 
@@ -16,30 +17,36 @@ if __name__ == "__main__":
     # A queue with data to be written to the DB.
     data_queue = custom_queue.CustomQueue()
 
+    def thread_kickoff(target):
+        thread = threading.Thread(
+            target=func,
+            kwargs=dict(data_queue=data_queue)
+        )
+        thread.setDaemon(True)
+        thread.start()
+
     # Start a thread to scrape Arduino data.
-    arduino_scraper_thread = threading.Thread(
+    arduino_scraper_thread = thread_kickoff(
         target=arduino_interface.arduino_scraper_loop,
-        kwargs=dict(data_queue=data_queue)
     )
-    arduino_scraper_thread.setDaemon(True)
-    arduino_scraper_thread.start()
 
     # Start a thread to scrape connection quality data.
-    conn_quality_scraper_thread = threading.Thread(
+    conn_quality_scraper_thread = thread_kickoff(
         target=ping.conn_quality_scraper_loop,
-        kwargs=dict(data_queue=data_queue)
     )
-    conn_quality_scraper_thread.setDaemon(True)
-    conn_quality_scraper_thread.start()
 
-    # Start popping items from the readings queue and inserting them into the DB.
-    cloud_uploader_thread = threading.Thread(
+    # Start popping items from the readings queue
+    # and inserting them into the DB.
+    cloud_uploader_thread = thread_kickoff(
         target=cloud_db.cloud_uploader_loop,
-        kwargs=dict(data_queue=data_queue)
     )
-    cloud_uploader_thread.setDaemon(True)
-    cloud_uploader_thread.start()
 
+    # Start the SQLite DB buffer thread.
+    sqlite_buffer_thread = thread_kickoff(
+        target=db_buffer.sqlite_buffer_loop,
+    )
+
+    # Show the "user menu".
     time.sleep(10.0)
     while True:
         try:
