@@ -72,4 +72,4 @@ if __name__ == "__main__":
     conn_quality_scraper_thread.start()
 
     # Start popping items from the readings queue and inserting them into the DB.
-    queue_consumer_loop()
+    queue_consumer_loop(data_queue=data_queue)

@@ -100,10 +100,10 @@ class WeatherDataSource(object):
                 WeatherDataSource.readings[kind].set(value)
 
 
-def scrape_readings_once(weather_data, data_queue):
+def scrape_readings_once(data_queue):
     """Retrieves readings and inserts it into the queue, once."""
     for comm_name, name in config.GCP_READING_NAME_TRANSLATION.items():
-        value, timestamp = weather_data.readings[comm_name].get_with_timestamp()
+        value, timestamp = WeatherDataSource.readings[comm_name].get_with_timestamp()
         if value is None:
             # Value is missing, ignore.
             continue
@@ -125,8 +125,8 @@ def arduino_scraper_loop(data_queue):
 
     This function should be running in a separate daemon thread."""
 
-    weather_data = arduino_interface.WeatherDataSource
-    weather_data.Start()
+    # Make sure the reading thread is running.
+    WeatherDataSource.Start()
 
     while True:
         try:
@@ -135,7 +135,7 @@ def arduino_scraper_loop(data_queue):
                 # Dropping data, queue too long.
                 pass
             else:
-                get_readings(weather_data, data_queue)
+                scrape_readings_once(data_queue)
         except Exception as e:
             print("Problem while getting readings data.")
             print(e)
