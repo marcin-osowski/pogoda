@@ -6,6 +6,7 @@ import threading
 import time
 
 import config
+import instance_config
 
 
 class LastValueRead(object):
@@ -98,5 +99,44 @@ class WeatherDataSource(object):
                 # Store the value.
                 WeatherDataSource.readings[kind].set(value)
 
-# Start the thread
-WeatherDataSource.Start()
+
+def scrape_readings_once(weather_data, data_queue):
+    """Retrieves readings and inserts it into the queue, once."""
+    for comm_name, name in config.GCP_READING_NAME_TRANSLATION.items():
+        value, timestamp = weather_data.readings[comm_name].get_with_timestamp()
+        if value is None:
+            # Value is missing, ignore.
+            continue
+        if timestamp is None:
+            # Timestamp is missing, ignore.
+            continue
+        latency = datetime.datetime.utcnow() - timestamp
+        if latency >= datetime.timedelta(seconds=config.LOGGER_INTERVAL_SEC):
+            # Data too old
+            continue
+        kind = (instance_config.GCP_INSTANCE_NAME_PREFIX +
+                config.GCP_READING_PREFIX +
+                name)
+        data_queue.put((kind, timestamp, value))
+
+
+def arduino_scraper_loop(data_queue):
+    """Scrapes Arduino data periodically, pushes it to the queue.
+
+    This function should be running in a separate daemon thread."""
+
+    weather_data = arduino_interface.WeatherDataSource
+    weather_data.Start()
+
+    while True:
+        try:
+            time.sleep(config.LOGGER_INTERVAL_SEC)
+            if data_queue.qsize() >= config.MAX_QUEUE_SIZE:
+                # Dropping data, queue too long.
+                pass
+            else:
+                get_readings(weather_data, data_queue)
+        except Exception as e:
+            print("Problem while getting readings data.")
+            print(e)
+            time.sleep(60.0)

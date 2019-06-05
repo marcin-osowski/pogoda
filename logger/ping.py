@@ -1,5 +1,9 @@
+import datetime
 import re
 import sh
+
+import config
+import instance_config
 
 
 def get_host_latency(target, timeout_sec):
@@ -50,3 +54,32 @@ def get_internet_latency():
         latency = min(latency, host_latency)
 
     return latency
+
+
+def scrape_conn_quality_once(data_queue):
+    internet_latency = ping.get_internet_latency()
+    if internet_latency is not None:
+        timestamp = datetime.datetime.utcnow()
+        kind = (instance_config.GCP_INSTANCE_NAME_PREFIX +
+                config.GCP_CONN_QUALITY_PREFIX +
+                "internet_latency")
+        data_queue.put((kind, timestamp, internet_latency))
+
+
+def conn_quality_scraper_loop(data_queue):
+    """A continuous scraper of connection quality data.
+
+    Should be running in a separate daemon thread."""
+
+    while True:
+        try:
+            if data_queue.qsize() >= config.MAX_QUEUE_SIZE:
+                # Dropping data, queue too long
+                pass
+            else:
+                get_conn_quality()
+            time.sleep(config.LOGGER_INTERVAL_SEC)
+        except Exception as e:
+            print("Problem while getting connection quality data.")
+            print(e)
+            time.sleep(60.0)
