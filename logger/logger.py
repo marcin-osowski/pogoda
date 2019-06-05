@@ -7,8 +7,8 @@ import queue
 import threading
 import time
 
+import arduino_interface
 import config
-import data_source
 import instance_config
 import ping
 
@@ -48,7 +48,7 @@ def get_and_push_readings_queue(weather_data):
 
 def readings_queue_producer_loop():
     # Uses a backgroud thread to read values from the serial port.
-    weather_data = data_source.WeatherDataSource
+    weather_data = arduino_interface.WeatherDataSource
 
     while True:
         try:
