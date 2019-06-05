@@ -1,5 +1,5 @@
 import collections
-import datetime
+from datetime import datetime, timedelta, timezone
 import io
 import re
 import threading
@@ -21,7 +21,7 @@ class LastValueRead(object):
         """Sets the currently held value."""
         with self._lock:
             self._value = value
-            self._timestamp = datetime.datetime.utcnow()
+            self._timestamp = datetime.now(timezone.utc)
 
     def get(self):
         """Returns the currently held value, or None."""
@@ -110,8 +110,8 @@ def scrape_readings_once(data_queue):
         if timestamp is None:
             # Timestamp is missing, ignore.
             continue
-        latency = datetime.datetime.utcnow() - timestamp
-        if latency >= datetime.timedelta(seconds=config.LOGGER_INTERVAL_SEC):
+        latency = datetime.now(timezone.utc) - timestamp
+        if latency >= timedelta(seconds=config.LOGGER_INTERVAL_SEC):
             # Data too old
             continue
         kind = (instance_config.GCP_INSTANCE_NAME_PREFIX +

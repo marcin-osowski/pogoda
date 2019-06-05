@@ -22,10 +22,10 @@ class BackendLatencyTimer(object):
         self.total = timedelta()
 
     def __enter__(self):
-        self._start = datetime.utcnow()
+        self._start = datetime.now(timezone.utc)
 
     def __exit__(self, *args):
-        self.total += datetime.utcnow() - self._start
+        self.total += datetime.now(timezone.utc) - self._start
 
 
 def create_datastore_client():

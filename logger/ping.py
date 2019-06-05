@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime, timezone
 import re
 import sh
 import time
@@ -60,7 +60,7 @@ def get_internet_latency():
 def scrape_conn_quality_once(data_queue):
     internet_latency = get_internet_latency()
     if internet_latency is not None:
-        timestamp = datetime.datetime.utcnow()
+        timestamp = datetime.now(timezone.utc)
         kind = (instance_config.GCP_INSTANCE_NAME_PREFIX +
                 config.GCP_CONN_QUALITY_PREFIX +
                 "internet_latency")
