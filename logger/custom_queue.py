@@ -3,6 +3,8 @@ import threading
 class CustomQueue(object):
     """A priority queue that can return both oldest and youngest elements.
 
+    Queue has no size limit.
+
     Public methods are thread safe.
 
     Priorities are given by the timestamps. The queue can return
@@ -18,6 +20,7 @@ class CustomQueue(object):
         """Inserts one element into the queue."""
         with self._cv:
             self._data.append((timestamp, kind, value))
+            self._cv.notify(n=1)
 
     def get_youngest(self):
         """Retrieves one element from the queue (with largest timestamp).
