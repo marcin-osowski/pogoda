@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import datetime
 import threading
 import time
 
@@ -10,6 +11,8 @@ import ping
 
 
 if __name__ == "__main__":
+    timestamp_start = datetime.datetime.utcnow()
+
     # A queue with data to be written to the DB.
     data_queue = custom_queue.CustomQueue()
 
@@ -42,8 +45,12 @@ if __name__ == "__main__":
         try:
             input("Press enter to show stats ")
             print()
-            print("Queue length:", data_queue.qsize())
+
+            time_running = datetime.datetime.utcnow() - timestamp_start
+
+            print("Elements currently in queue:", data_queue.qsize())
             print("Total elements put on the queue:", data_queue.total_elements_put())
+            print("Time running:", time_running)
             print()
         except Exception as e:
             print(e)
