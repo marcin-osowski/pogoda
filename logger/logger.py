@@ -35,7 +35,7 @@ def queue_consumer_loop(data_queue):
         try:
             client = create_datastore_client()
             while True:
-                kind, value, timestamp = data_queue.get()
+                kind, timestamp, value = data_queue.get()
                 written = False
                 try:
                     insert_into_cloud_db(client, kind, timestamp, value)
