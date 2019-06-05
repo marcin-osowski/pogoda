@@ -43,6 +43,7 @@ if __name__ == "__main__":
             input("Press enter to show stats ")
             print()
             print("Queue length:", data_queue.qsize())
+            print("Total elements put on the queue:", data_queue.total_elements_put())
             print()
         except Exception as e:
             print(e)

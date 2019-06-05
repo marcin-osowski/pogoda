@@ -15,11 +15,13 @@ class CustomQueue(object):
     def __init__(self):
         self._cv = threading.Condition()
         self._data = []
+        self._total_elements_put = 0
 
     def put(self, timestamp, kind, value):
         """Inserts one element into the queue."""
         with self._cv:
             self._data.append((timestamp, kind, value))
+            self._total_elements_put += 1
             self._cv.notify(n=1)
 
     def get_youngest(self):
@@ -50,6 +52,11 @@ class CustomQueue(object):
         """Returns approximate size of the queue."""
         with self._cv:
             return len(self._data)
+
+    def total_elements_put(self):
+        """Returns the approximate total amount of elements put."""
+        with self._cv:
+            return self._total_elements_put
 
     # Private methods
     def _queue_empty(self):
