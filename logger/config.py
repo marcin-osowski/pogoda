@@ -34,17 +34,17 @@ SQLITE_DB_FILE=os.path.join((os.path.dirname(os.path.realpath(__file__))), SQLIT
 
 # Start moving items from the queue to the sqlite DB
 # when queue gets this long, or longer.
-SQLITE_DUMP_QUEUE_LENGTH=300
+SQLITE_DUMP_QUEUE_LENGTH=150
 
 # Dump this many items at once.
-SQLITE_DUMP_AMOUNT=100
+SQLITE_DUMP_AMOUNT=50
 
 # Start fetching items from SQLite into the
 # queue when it gets this short, or shorter.
-SQLITE_FETCH_QUEUE_LENGTH=50
+SQLITE_FETCH_QUEUE_LENGTH=10
 
 # Fetch this many items at once.
-SQLITE_FETCH_AMOUNT=75
+SQLITE_FETCH_AMOUNT=50
 
 
 #
