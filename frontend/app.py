@@ -430,6 +430,10 @@ def route_devices():
             client, config.GCP_GROUND_LATENCY_KIND,
             time_from, time_to)
 
+    # Smoothen the data
+    ground_latency = apply_smoothing(ground_latency, minutes=10.1)
+
+    # Insert gaps.
     ground_latency = insert_gaps(ground_latency, min_gap_minutes=20.1)
 
     return bottle.template("devices.tpl", dict(
