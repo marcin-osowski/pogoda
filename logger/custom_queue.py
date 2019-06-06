@@ -43,6 +43,17 @@ class CustomQueue(object):
             timestamp, kind, value = self._data.pop(-1)
             return timestamp, kind, value
 
+    def get_youngest_nowait(self):
+        """Retrieves one element from the queue (with largest timestamp).
+
+        Returns None if the queue is empty.
+        """
+        with self._cv:
+            if not self._data:
+                return None
+            timestamp, kind, value = self._data.pop(-1)
+            return timestamp, kind, value
+
     def get_oldest(self):
         """Retrieves one element from the queue (with smallest timestamp).
 

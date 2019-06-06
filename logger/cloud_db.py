@@ -11,31 +11,55 @@ def create_datastore_client():
     return datastore.Client(project=config.GCP_PROJECT)
 
 
-def insert_into_cloud_db(client, timestamp, kind, value):
-    """Inserts a single entry into the cloud DB."""
-    key = client.key(kind)
-    reading_ent = datastore.Entity(key)
-    reading_ent.update(dict(timestamp=timestamp))
-    if value is not None:
-        reading_ent.update(dict(value=value))
-    client.put(reading_ent)
+def insert_into_cloud_db(client, elements):
+    """Inserts entries into the cloud DB."""
+    ents = []
+    for timestamp, kind, value in elements:
+        key = client.key(kind)
+        ent = datastore.Entity(key)
+        ent.update(dict(timestamp=timestamp))
+        if value is not None:
+            ent.update(dict(value=value))
+        ents.append(ent)
+    if ents:
+        client.put_multi(ents)
 
 
 def cloud_uploader_loop(data_queue):
-    """A loop: popping items from queue, inserting them into the cloud DB."""
+    """A loop: popping items from queue, inserting them into the cloud DB.
+
+    If there's multiple items pending in the queue it will attempt to move
+    to the cloud DB a few items at a time.
+    """
     while True:
         try:
             client = create_datastore_client()
             while True:
+                # Get one element from the queue.
+                elements = []
                 timestamp, kind, value = data_queue.get_youngest()
+                elements.append((timestamp, kind, value))
+
+                # Try to get extra 9 elements for a total of max 10
+                # if there's anything else in the queue. This speeds
+                # up bulk upload of data.
+                for i in range(9):
+                    data = data_queue.get_youngest_nowait()
+                    if data is None:
+                        break
+                    timestamp, kind, value = data
+                    elements.append((timestamp, kind, value))
+
+                # Try to write.
                 written = False
                 try:
-                    insert_into_cloud_db(client, timestamp, kind, value)
+                    insert_into_cloud_db(client, elements)
                     written = True
                 finally:
                     if not written:
-                        # Put back in the readings queue
-                        data_queue.put_return(timestamp, kind, value)
+                        # Put back elements in the readings queue
+                        for timestamp, kind, value in elements:
+                            data_queue.put_return(timestamp, kind, value)
         except Exception as e:
             print("Problem while inserting data into the cloud DB.")
             print(e)

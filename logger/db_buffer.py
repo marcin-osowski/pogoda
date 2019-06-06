@@ -131,6 +131,7 @@ CREATE TABLE IF NOT EXISTS data_buffer (
 def sqlite_buffer_loop(data_queue):
     while True:
         sqlite_buffer = SQLiteBuffer()
+        print("SQLite buffer has %d elements" % sqlite_buffer.rows_in_db())
         try:
             while True:
                 qsize = data_queue.qsize()
