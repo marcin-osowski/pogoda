@@ -1,8 +1,9 @@
 /*
 
-An Arduino controller for the weather station. Output is
-shown on the LCD screen and written to the serial port
-with SERIAL_BAUD speed, in the following form:
+An Arduino controller for the weather station, at the
+ground level. Output is shown on the LCD screen and
+written to the serial port with SERIAL_BAUD speed,
+in the following form:
   - "Temperature: XX.X\n"
   - "Pressure: XXXX.X\n"
 
