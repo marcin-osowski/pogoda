@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Note: this can mess up the Ethernet controller.
+
 echo Disabling USB
 echo 0 > /sys/devices/platform/soc/3f980000.usb/buspower
 cat /sys/devices/platform/soc/3f980000.usb/buspower

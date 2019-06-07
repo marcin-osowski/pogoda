@@ -2,13 +2,15 @@
 00 04           * * *   sudo reboot
 
 # Restart USB several times a day, in case the Arduino freezes.
-05 00,06,12,18  * * *   sudo /home/pi/pogoda/scripts/restart_raspberry_usb.sh
+# Disables, as this messes with the Ethernet controller.
+#05 00,06,12,18  * * *   sudo /home/pi/pogoda/scripts/restart_raspberry_usb.sh
 
 # Keep WiFi power management off (so it doesn't turn off
 # after a period of inactivity).
-25 00,06,12,18  * * *   sudo iwconfig wlan0 power off
+# Disabled, as I don't use the wlan controller.
+#25 00,06,12,18  * * *   sudo iwconfig wlan0 power off
 # Also at boot
-@reboot                 sleep 60; sudo iwconfig wlan0 power off
+#@reboot                 sleep 60; sudo iwconfig wlan0 power off
 
 # Start logging at boot
 @reboot                 sleep 30; cd /home/pi/pogoda/logger; /usr/bin/screen -d -m ./logger.py
