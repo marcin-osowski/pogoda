@@ -61,6 +61,7 @@ LiquidCrystal_I2C lcd(0x27, 20, 4);
 void setup() {
   // Initializes the output seral port.
   Serial.begin(SERIAL_BAUD);
+  while (!Serial);
 
   // Initializes LCD.
   lcd.init();
