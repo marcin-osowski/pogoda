@@ -14,7 +14,7 @@ Pin layout (for Arduino Nano):
   - D3: rain gauge. Other wire from the rain gauge should
         be connected to the ground.
   - A4: wind direction sensor. A4 should be connected via a
-        10k resistor to VCC. The other wire from the wind
+        10k resistor to 3.3 volts. The other wire from the wind
         direction sensor should be connected to the ground.
 
 */
@@ -48,6 +48,9 @@ void loop() {
   Serial.println(rain.rain_amount());
   Serial.print("Average wind speed [m/s]: ");
   Serial.println(wind.average_wind_speed());
-  Serial.print("Direction (raw read): ");
-  Serial.println(get_raw_wind_direction());
+  Serial.print("Direction: ");
+  Serial.print(get_wind_direction_text());
+  Serial.print(" (");
+  Serial.print(get_wind_direction());
+  Serial.println(" deg)");
 }

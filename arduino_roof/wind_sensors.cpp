@@ -83,6 +83,148 @@ float WindSpeedMeasurement::average_wind_speed() {
   return speed_m_s;
 }
 
-uint32_t get_raw_wind_direction() {
-  return analogRead(WIND_DIRECTION_PIN);
+static bool cmp_margin(const int value, const int reference) {
+  const int delta = value - reference;
+  return delta >= -10 && delta <= 10;
+}
+
+float get_wind_direction() {
+  const int reading = analogRead(WIND_DIRECTION_PIN);
+
+  // Note: the numeric constants were measured for the
+  // particular setup: Arduino 3v3 voltage regulator,
+  // the particular 10k ohm resistor, and the particular
+  // wind vane unit.
+
+  // Try the 8 major directions first.
+  // Major directions are most commonly output by the
+  // device.
+  if (cmp_margin(reading, 539)) {
+    // North.
+    return 0.0f;
+  }
+  if (cmp_margin(reading, 318)) {
+    // North-east.
+    return 45.0f;
+  }
+  if (cmp_margin(reading, 63)) {
+    // East.
+    return 90.0f;
+  }
+  if (cmp_margin(reading, 127)) {
+    // South-east.
+    return 135.0f;
+  }
+  if (cmp_margin(reading, 197)) {
+    // South.
+    return 180.0f;
+  }
+  if (cmp_margin(reading, 432)) {
+    // South-west.
+    return 225.0f;
+  }
+  if (cmp_margin(reading, 647)) {
+    // West.
+    return 270.0f;
+  }
+  if (cmp_margin(reading, 607)) {
+    // North-west.
+    return 315.0f;
+  }
+
+  // Then the 8 minor directions.
+  if (cmp_margin(reading, 280)) {
+    // North north-east.
+    return 22.5f;
+  }
+  if (cmp_margin(reading, 57)) {
+    // East north-east.
+    return 67.5f;
+  }
+  if (cmp_margin(reading, 44)) {
+    // East south-east.
+    return 112.5f;
+  }
+  if (cmp_margin(reading, 87)) {
+    // South south-east.
+    return 157.5f;
+  }
+  if (cmp_margin(reading, 168)) {
+    // South south-west.
+    return 202.5f;
+  }
+  if (cmp_margin(reading, 410)) {
+    // West south-west.
+    return 247.5f;
+  }
+  if (cmp_margin(reading, 566)) {
+    // West north-west.
+    return 292.5f;
+  }
+  if (cmp_margin(reading, 481)) {
+    // North north-west.
+    return 337.5f;
+  }
+
+  return -1.0f;
+}
+
+const char* get_wind_direction_text() {
+  const int reading = analogRead(WIND_DIRECTION_PIN);
+
+  // Try the 8 major directions first.
+  // Major directions are most commonly output by the
+  // device.
+  if (cmp_margin(reading, 539)) {
+    return "north";
+  }
+  if (cmp_margin(reading, 318)) {
+    return "north-east";
+  }
+  if (cmp_margin(reading, 63)) {
+    return "east";
+  }
+  if (cmp_margin(reading, 127)) {
+    return "south-east";
+  }
+  if (cmp_margin(reading, 197)) {
+    return "south";
+  }
+  if (cmp_margin(reading, 432)) {
+    return "south-west";
+  }
+  if (cmp_margin(reading, 647)) {
+    return "west";
+  }
+  if (cmp_margin(reading, 607)) {
+    return "north-west";
+  }
+
+  // Then the 8 minor directions.
+  if (cmp_margin(reading, 280)) {
+    return "north north-east";
+  }
+  if (cmp_margin(reading, 57)) {
+    return "east north-east";
+  }
+  if (cmp_margin(reading, 44)) {
+    return "east south-east";
+  }
+  if (cmp_margin(reading, 87)) {
+    return "south south-east";
+  }
+  if (cmp_margin(reading, 168)) {
+    return "south south-west";
+  }
+  if (cmp_margin(reading, 410)) {
+    return "west south-west";
+  }
+  if (cmp_margin(reading, 566)) {
+    return "west north-west";
+  }
+  if (cmp_margin(reading, 481)) {
+    return "north north-west";
+  }
+
+  return "error";
 }

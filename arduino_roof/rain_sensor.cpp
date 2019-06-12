@@ -5,7 +5,7 @@
 
 // Number of quiet microseconds required to register a new
 // interrupt (debounce).
-#define INTERRUPT_DEBOUNCE_US (20 * 1000)
+#define INTERRUPT_DEBOUNCE_US 5000
 
 
 // Last time a rain interrupt was called.
