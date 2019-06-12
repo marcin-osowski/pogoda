@@ -4,12 +4,18 @@ Weather station at my home.
 Frontend: https://pogoda.osowski.info
 
 ## Setup
-1. `arduino_controller/`: an Arduino Nano board connected to sensors,
+1. `arduino_ground/`: an Arduino Nano board connected to sensors,
    periodically writes sensor data to the serial output (C++).
-2. `logger/`: a Raspberry Pi, connected to the Arduino via USB,
+   Located at ground level (around 1 meter above the ground).
+   Sensors: temperature, humidity, air pressure, air quality.
+2. `arduino_roof/`: an Arduino Nano board connected to sensors,
+   periodically writes sensor data to the serial output (C++).
+   Located at roof level.
+   Sensors: wind direction and speed, rain mm.
+3. `logger/`: a Raspberry Pi, connected to the Arduino via USB,
    reads this data and pushes it to a Google Cloud Datastore
    database (Python).
-3. `frontend/`: a web server, presents the data from the
+4. `frontend/`: a web server, presents the data from the
    Datastore database (Python).
 
 ## Used sensors
