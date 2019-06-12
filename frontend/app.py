@@ -423,7 +423,7 @@ def route_charts():
 def route_devices():
     latency = BackendLatencyTimer()
     time_to = datetime.now(timezone.utc)
-    time_from = time_to - timedelta(days=7)
+    time_from = time_to - timedelta(days=1)
     with latency:
         client = create_datastore_client()
         ground_latency = get_internet_latency_data(
@@ -431,7 +431,7 @@ def route_devices():
             time_from, time_to)
 
     # Smoothen the data
-    ground_latency = apply_smoothing(ground_latency, minutes=10.1)
+    ground_latency = apply_smoothing(ground_latency, minutes=30.1)
 
     # Insert gaps.
     ground_latency = insert_gaps(ground_latency, min_gap_minutes=20.1)
