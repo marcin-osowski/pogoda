@@ -9,10 +9,13 @@ Units:
   - TODO
 
 Pin layout (for Arduino Nano):
-  - D2: anemometer (other wire from the anemometer should
-    be connected to the ground).
-  - D3: rain gauge (other wire from the rain gauge should
-    be connected to the ground).
+  - D2: anemometer. Other wire from the anemometer should
+        be connected to the ground.
+  - D3: rain gauge. Other wire from the rain gauge should
+        be connected to the ground.
+  - A4: wind direction sensor. A4 should be connected via a
+        10k resistor to VCC. The other wire from the wind
+        direction sensor should be connected to the ground.
 
 */
 
@@ -24,6 +27,9 @@ Pin layout (for Arduino Nano):
 
 // Rain gauge connection
 #define RAIN_PIN 3
+
+// Wind direction connection
+#define WIND_DIRECTION_PIN A4
 
 // Number of quiet microsecons required to register a new
 // interrupt (both for anemo and rain).
@@ -105,8 +111,11 @@ void setup() {
 
 void loop() {
   delay(1000);
+  const int a = analogRead(WIND_DIRECTION_PIN);
   Serial.print("Rain: ");
   Serial.println(get_rain_interrupt_count());
   Serial.print("Anemo: ");
   Serial.println(get_anemo_interrupt_count());
+  Serial.print("Direction (raw read): ");
+  Serial.println(a);
 }
