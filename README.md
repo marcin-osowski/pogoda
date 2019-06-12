@@ -25,3 +25,5 @@ Frontend: https://pogoda.osowski.info
    [BMP085](https://www.sparkfun.com/datasheets/Components/General/BST-BMP085-DS000-05.pdf)
 3. Air quality (particulate matter):
    [PMS5003](https://cdn-learn.adafruit.com/downloads/pdf/pm25-air-quality-sensor.pdf)
+4. Wind direction, wind speed and rain mm:
+   [80422](https://www.sparkfun.com/datasheets/Sensors/Weather/Weather%20Sensor%20Assembly..pdf)
