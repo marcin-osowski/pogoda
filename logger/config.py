@@ -1,5 +1,9 @@
 import os.path
 
+# Helper, since this is needed in a few places.
+# The directory containing this config file.
+this_directory=os.path.dirname(os.path.realpath(__file__))
+
 
 #
 # ARDUINO
@@ -30,7 +34,7 @@ MAX_QUEUE_SIZE=256*1024
 SQLITE_DB_FILENAME="db_buffer.sqlite3"
 
 # Full file path for the SQLite DB.
-SQLITE_DB_FILE=os.path.join((os.path.dirname(os.path.realpath(__file__))), SQLITE_DB_FILENAME)
+SQLITE_DB_FILE=os.path.join(this_directory, SQLITE_DB_FILENAME)
 
 # Start moving items from the queue to the sqlite DB
 # when queue gets this long, or longer.
@@ -52,7 +56,7 @@ SQLITE_FETCH_AMOUNT=50
 #
 
 # Credentials to authenticate.
-GCP_CREDENTIALS="./gcp-credentials.json"
+GCP_CREDENTIALS=os.path.join(this_directory, "gcp-credentials.json")
 
 # GCP project.
 GCP_PROJECT="pogoda-240600"
