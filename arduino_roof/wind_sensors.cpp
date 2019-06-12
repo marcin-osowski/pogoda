@@ -29,6 +29,15 @@ static void anemo_interrupt_handler() {
   }
 }
 
+// A function that correctly reads the
+// current amount of anemo interrupts.
+static uint32_t get_anemo_interrupt_count() {
+  noInterrupts();
+  volatile uint32_t anemo_copy = anemo_interrupts;
+  interrupts();
+  return anemo_copy;
+}
+
 void initialize_wind() {
   // Set up the anemometer pin.
   pinMode(ANEMO_PIN, INPUT_PULLUP);
@@ -51,11 +60,27 @@ void initialize_wind() {
   interrupts();
 }
 
-uint32_t get_anemo_interrupt_count() {
-  noInterrupts();
-  volatile uint32_t anemo_copy = anemo_interrupts;
-  interrupts();
-  return anemo_copy;
+void WindSpeedMeasurement::start() {
+  initial_interrupts = get_anemo_interrupt_count();
+  initial_millis = millis();
+}
+
+float WindSpeedMeasurement::average_wind_speed() {
+  const uint32_t now_interrupts = get_anemo_interrupt_count();
+  const unsigned long now_millis = millis();
+
+  // The interrupt is called once per second when
+  // the speed of the wind is 1.492 miles/h
+  // or 2.4 km/h or 0.666667 m/s.
+  // Otherwise scales approximately linearly.
+
+  const float interrupts_per_ms =
+    ((float)(now_interrupts - initial_interrupts)) /
+    ((float)(now_millis - initial_millis));
+
+  const float speed_m_s = interrupts_per_ms * (1000.0f * 0.666667f);
+
+  return speed_m_s;
 }
 
 uint32_t get_raw_wind_direction() {

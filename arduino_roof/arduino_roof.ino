@@ -37,11 +37,17 @@ void setup() {
 }
 
 void loop() {
+  WindSpeedMeasurement wind;
+  wind.start();
+
+  RainAmountMeasurement rain;
+  rain.start();
+
   delay(1000);
-  Serial.print("Rain: ");
-  Serial.println(get_rain_interrupt_count());
-  Serial.print("Anemo: ");
-  Serial.println(get_anemo_interrupt_count());
+  Serial.print("Rain [mm]: ");
+  Serial.println(rain.rain_amount());
+  Serial.print("Average wind speed [m/s]: ");
+  Serial.println(wind.average_wind_speed());
   Serial.print("Direction (raw read): ");
   Serial.println(get_raw_wind_direction());
 }

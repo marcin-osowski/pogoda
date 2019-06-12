@@ -3,9 +3,9 @@
 // Rain gauge connection
 #define RAIN_PIN 3
 
-// Number of quiet microsecons required to register a new
+// Number of quiet microseconds required to register a new
 // interrupt (debounce).
-#define INTERRUPT_DEBOUNCE_US 5000
+#define INTERRUPT_DEBOUNCE_US (20 * 1000)
 
 
 // Last time a rain interrupt was called.
@@ -24,6 +24,15 @@ static void rain_interrupt_handler() {
   if (time_since_last > INTERRUPT_DEBOUNCE_US) {
     rain_interrupts++;
   }
+}
+
+// A function that correctly reads the
+// current amount of rain interrupts.
+static uint32_t get_rain_interrupt_count() {
+  noInterrupts();
+  volatile uint32_t rain_copy = rain_interrupts;
+  interrupts();
+  return rain_copy;
 }
 
 void initialize_rain() {
@@ -48,9 +57,18 @@ void initialize_rain() {
   interrupts();
 }
 
-uint32_t get_rain_interrupt_count() {
-  noInterrupts();
-  volatile uint32_t rain_copy = rain_interrupts;
-  interrupts();
-  return rain_copy;
+
+void RainAmountMeasurement::start() {
+  initial_interrupts = get_rain_interrupt_count();
+}
+
+float RainAmountMeasurement::rain_amount() {
+  const uint32_t now_interrupts = get_rain_interrupt_count();
+
+  // The interrupt is called twice (not once) per every
+  // 0.2794 mm (0.011") of rain that has fallen.
+  const float rain_mm =
+    ((float)(now_interrupts - initial_interrupts)) * (0.5f * 0.2794f);
+
+  return rain_mm;
 }
