@@ -15,6 +15,7 @@ class LoggerStatistics(object):
     def __init__(self):
         self._lock = threading.Lock()
         self._total_comm_lines_read = 0
+        self._total_comm_parsed_lines_read = 0
         self._total_comm_bytes_read = 0
         self._cloud_db_successes = []
         self._cloud_db_latencies = []
@@ -24,20 +25,30 @@ class LoggerStatistics(object):
         self._number_of_new_readings = 0
         self._timestamp_start = datetime.now(timezone.utc)
 
-    def set_total_comm_lines_read(self, total_comm_lines_read):
-        """Sets the amount of lines read from the comm port."""
+    def add_comm_lines_read(self, to_add=1):
+        """Increments the amount of lines read from the comm port."""
         with self._lock:
-            self._total_comm_lines_read = total_comm_lines_read
+            self._total_comm_lines_read += to_add
 
-    def set_total_comm_bytes_read(self, total_comm_bytes_read):
-        """Sets the amount of bytes read from the comm port."""
+    def add_comm_parsed_lines_read(self, to_add=1):
+        """Increments the amount of parsed lines read from the comm port."""
         with self._lock:
-            self._total_comm_bytes_read = total_comm_bytes_read
+            self._total_comm_parsed_lines_read += to_add
+
+    def add_comm_bytes_read(self, to_add=1):
+        """Increments the amount of bytes read from the comm port."""
+        with self._lock:
+            self._total_comm_bytes_read += to_add
 
     def total_comm_lines_read(self):
         """Returns the amount of lines read from the comm port."""
         with self._lock:
             return self._total_comm_lines_read
+
+    def total_comm_parsed_lines_read(self):
+        """Returns the amount of parsed lines read from the comm port."""
+        with self._lock:
+            return self._total_comm_parsed_lines_read
 
     def total_comm_bytes_read(self):
         """Returns the amount of bytes read from the comm port."""

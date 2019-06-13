@@ -26,6 +26,9 @@ if __name__ == "__main__":
     # Logger statistics.
     logger_statistics = logger_stats.LoggerStatistics()
 
+    # Arduino access class.
+    weather_data = arduino_interface.WeatherDataSource()
+
     def thread_kickoff(target, **kwargs):
         kwargs["data_queue"] = data_queue
         kwargs["logger_statistics"] = logger_statistics
@@ -36,9 +39,15 @@ if __name__ == "__main__":
         thread.setDaemon(True)
         thread.start()
 
-    # Start a thread to scrape Arduino data.
+    # Start a thread to read Arduino output.
+    arduino_reader_thread = thread_kickoff(
+        target=weather_data.reader_loop,
+    )
+
+    # Start a thread to periodically push
+    # Arduino data to the queue.
     arduino_scraper_thread = thread_kickoff(
-        target=arduino_interface.arduino_scraper_loop,
+        target=weather_data.scraper_loop,
     )
 
     # Start a thread to scrape connection quality data.
@@ -77,6 +86,7 @@ if __name__ == "__main__":
             time_since_cloud_success = logger_statistics.cloud_db_time_since_success()
             time_since_cloud_failure = logger_statistics.cloud_db_time_since_failure()
             comm_lines_read = logger_statistics.total_comm_lines_read()
+            comm_parsed_lines_read = logger_statistics.total_comm_parsed_lines_read()
             comm_bytes_read = logger_statistics.total_comm_bytes_read()
             time_running = logger_statistics.time_running()
 
@@ -92,6 +102,8 @@ if __name__ == "__main__":
                   time_since_cloud_failure)
             print("Lines read from Arduino comm port:",
                   comm_lines_read)
+            print("Parsed lines read from Arduino comm port:",
+                  comm_parsed_lines_read)
             print("Bytes read from Arduino comm port:",
                   comm_bytes_read)
             print("Program running (time):", time_running)

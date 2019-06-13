@@ -38,45 +38,31 @@ class LastValueRead(object):
 
 
 class WeatherDataSource(object):
-    """Retrieves from device and stores all recent weather data. Singleton."""
+    """Retrieves from device and stores all recent weather data."""
 
-    # The available readings.
-    readings = collections.defaultdict(lambda: LastValueRead())
+    def __init__(self):
+        self._lock = threading.Lock()
+        self._readings = collections.defaultdict(lambda: LastValueRead())
 
-    # Total number of nonempty lines read from the comm port.
-    num_lines_read = 0
-
-    # Total number of bytes read from the comm port.
-    num_bytes_read = 0
-
-    # Reader thread spawn lock
-    _lock = threading.Lock()
-
-    @staticmethod
-    def Start():
-        """Starts the underlying reader thread (never terminates)."""
-        with WeatherDataSource._lock:
-            if hasattr(WeatherDataSource, "_reader_thread"):
-                # Already initialized.
-                return
-            WeatherDataSource._reader_thread = threading.Thread(
-                    target=WeatherDataSource._reader_loop)
-            WeatherDataSource._reader_thread.setDaemon(True)
-            WeatherDataSource._reader_thread.start()
-
-    @staticmethod
-    def _reader_loop():
+    def reader_loop(self, data_queue, logger_statistics):
         while True:
             try:
-                WeatherDataSource._stream_reader()
+                self._stream_reader(data_queue, logger_statistics)
             except Exception as e:
                 print("Problem while reading %s" % config.COMM_PORT)
                 print(e)
-                time.sleep(30.0)
+                time.sleep(60.0)
             print("Re-starting data source stream reader.")
 
-    @staticmethod
-    def _stream_reader():
+    def get_reading(self, key):
+        """Returns a LastValueRead object for the key.
+
+        Will be empty if there's no data under that key.
+        """
+        with self._lock:
+            return self._readings[key]
+
+    def _stream_reader(self, data_queue, logger_statistics):
         print("Opening %s" % config.COMM_PORT)
         with io.open(config.COMM_PORT, mode='rt', buffering=1, errors='replace') as stream:
             print("Opened %s" % config.COMM_PORT)
@@ -84,15 +70,17 @@ class WeatherDataSource(object):
                 line = stream.readline()
                 if not line:
                     raise RuntimeError("Input stream %s was terminated" % config.COMM_PORT)
+
                 line = line.strip()
                 if not line:
                     # Empty line (except for newline character).
                     continue
 
                 # Update stats.
-                WeatherDataSource.num_lines_read += 1
-                WeatherDataSource.num_bytes_read += len(line)
+                logger_statistics.add_comm_lines_read()
+                logger_statistics.add_comm_bytes_read(len(line))
 
+                # Decompose the line into kind and value
                 match = re.match("^([^:]+): ([0-9.]+)$", line)
                 if not match:
                     # Damaged line.
@@ -100,79 +88,77 @@ class WeatherDataSource(object):
                 kind = match.group(1)
                 value = match.group(2)
 
+                # Try to parse the value as a float.
                 try:
                     value = float(value)
                 except:
                     # Not a valid float value
                     continue
 
+                # This line is parsed, log that.
+                logger_statistics.add_comm_parsed_lines_read()
+
                 # Store the value.
-                WeatherDataSource.readings[kind].set(value)
+                with self._lock:
+                    self._readings[kind].set(value)
 
 
-def scrape_readings_once(data_queue, logger_statistics, last_timestamp_read):
-    """Retrieves readings and inserts it into the queue, once."""
-    for comm_name, name in config.GCP_READING_NAME_TRANSLATION.items():
-        value, timestamp = WeatherDataSource.readings[comm_name].get_with_timestamp()
-        if value is None:
-            # Value is missing, ignore.
-            continue
-        if timestamp is None:
-            # Timestamp is missing, ignore.
-            continue
-
-        if comm_name in last_timestamp_read:
-            if timestamp <= last_timestamp_read[comm_name]:
-                # Data has not changed since last access.
+    def _scrape_readings_once(self, data_queue, logger_statistics, last_timestamp_read):
+        """Retrieves readings and inserts it into the queue, once."""
+        for comm_name, name in config.GCP_READING_NAME_TRANSLATION.items():
+            value, timestamp = self.get_reading(comm_name).get_with_timestamp()
+            if value is None:
+                # Value is missing, ignore.
+                continue
+            if timestamp is None:
+                # Timestamp is missing, ignore.
                 continue
 
-
-        # Compute the DB kind.
-        kind = (instance_config.GCP_INSTANCE_NAME_PREFIX +
-                config.GCP_READING_PREFIX +
-                name)
-
-        # Push it.
-        data_queue.put(
-            timestamp=timestamp,
-            kind=kind,
-            value=value,
-        )
-        logger_statistics.register_new_reading()
-
-        # Store last access timestamp.
-        last_timestamp_read[comm_name] = datetime.now(timezone.utc)
+            if comm_name in last_timestamp_read:
+                if timestamp <= last_timestamp_read[comm_name]:
+                    # Data has not changed since last access.
+                    continue
 
 
-def arduino_scraper_loop(data_queue, logger_statistics):
-    """Scrapes Arduino data periodically, pushes it to the queue.
+            # Compute the DB kind.
+            kind = (instance_config.GCP_INSTANCE_NAME_PREFIX +
+                    config.GCP_READING_PREFIX +
+                    name)
 
-    This function should be running in a separate daemon thread."""
+            # Push it.
+            data_queue.put(
+                timestamp=timestamp,
+                kind=kind,
+                value=value,
+            )
+            logger_statistics.register_new_reading()
 
-    # Make sure the reading thread is running.
-    WeatherDataSource.Start()
+            # Store last access timestamp.
+            last_timestamp_read[comm_name] = datetime.now(timezone.utc)
 
-    # The timestamp of the last value read from Arduino.
-    # Format: comm_name -> datetime
-    last_timestamp_read = dict()
 
-    while True:
-        try:
-            # Wait for the next reading.
-            time.sleep(config.LOGGER_INTERVAL_SEC)
+    def scraper_loop(self, data_queue, logger_statistics):
+        """Scrapes Arduino data periodically, pushes it to the queue.
 
-            # Update comm port reading statistics.
-            logger_statistics.set_total_comm_lines_read(
-                WeatherDataSource.num_lines_read)
-            logger_statistics.set_total_comm_bytes_read(
-                WeatherDataSource.num_bytes_read)
+        This function should be running in a separate daemon thread."""
 
-            if data_queue.qsize() >= config.MAX_QUEUE_SIZE:
-                # Dropping data, queue too long.
-                pass
-            else:
-                scrape_readings_once(data_queue, logger_statistics, last_timestamp_read)
-        except Exception as e:
-            print("Problem while getting readings data.")
-            print(e)
-            time.sleep(60.0)
+        # The timestamp of the last value read from Arduino
+        # and pushed onto the queue.
+        # Format: comm_name -> datetime
+        last_timestamp_read = dict()
+
+        while True:
+            try:
+                # Wait for the next reading.
+                time.sleep(config.LOGGER_INTERVAL_SEC)
+
+                if data_queue.qsize() >= config.MAX_QUEUE_SIZE:
+                    # Dropping data, queue too long.
+                    pass
+                else:
+                    self._scrape_readings_once(data_queue, logger_statistics,
+                                               last_timestamp_read)
+            except Exception as e:
+                print("Problem while getting readings data.")
+                print(e)
+                time.sleep(60.0)
