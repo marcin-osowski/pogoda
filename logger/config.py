@@ -93,6 +93,10 @@ GCP_READING_NAME_TRANSLATION={
     "Particles > 2.5um / 0.1L air": "particles_25",
     "Particles > 5.0um / 0.1L air": "particles_50",
     "Particles > 10.0 um / 0.1L air": "particles_100",
+
+    "Wind speed": "wind_speed",
+    "Wind direction": "wind_direction",
+    "Rain since last output": "rain_mm",
 }
 
 # The entity kind for connection quality data is fully specified as:
