@@ -4,12 +4,11 @@ import bottle
 from collections import defaultdict
 from concurrent import futures
 from datetime import datetime, timezone, timedelta
-from google.cloud import datastore
 import math
-import os
 import time
 
 import config
+import db_access
 
 app = bottle.Bottle()
 executor = futures.ThreadPoolExecutor(max_workers=40)
@@ -26,66 +25,6 @@ class BackendLatencyTimer(object):
 
     def __exit__(self, *args):
         self.total += datetime.now(timezone.utc) - self._start
-
-
-def create_datastore_client():
-    """Creates a Datastore Client object."""
-    os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = config.GCP_CREDENTIALS
-    return datastore.Client(project=config.GCP_PROJECT)
-
-
-def get_latest_reading(client, name):
-    """Returns the value and timestamp of the latest reading."""
-    query = client.query(kind=name)
-    query.order = ["-timestamp"]
-    results = list(query.fetch(limit=1))
-
-    if not results:
-        return None, None
-    result = results[0]
-    if "value" not in result:
-        return None, None
-    value = result["value"]
-    if "timestamp" not in result:
-        return None, None
-    timestamp = result["timestamp"]
-
-    return value, timestamp
-
-
-def get_internet_latency_data(client, kind, time_from, time_to):
-    query = client.query(kind=kind)
-    query.add_filter("timestamp", ">=", time_from)
-    query.add_filter("timestamp", "<=", time_to)
-    query.order = ["timestamp"]
-
-    parsed_results = []
-    for entity in query.fetch():
-        if "timestamp" not in entity:
-            continue
-        timestamp = entity["timestamp"]
-        value = None
-        if "value" in entity:
-            value = entity["value"]
-        parsed_results.append((value, timestamp))
-    return parsed_results
-
-
-def get_last_readings(client, name, time_from, time_to):
-    """Returns values and timestamps of recent readings."""
-    query = client.query(kind=name)
-    query.add_filter("timestamp", ">=", time_from)
-    query.add_filter("timestamp", "<=", time_to)
-    query.order = ["timestamp"]
-
-    parsed_results = []
-    for entity in query.fetch():
-        if "value" not in entity:
-            continue
-        if "timestamp" not in entity:
-            continue
-        parsed_results.append((entity["value"], entity["timestamp"]))
-    return parsed_results
 
 
 def abs_delta_seconds(first, second):
@@ -294,15 +233,15 @@ def date_to_seconds_ago(date):
 def root():
     latency = BackendLatencyTimer()
     with latency:
-        client = create_datastore_client()
+        client = db_access.create_datastore_client()
         temp_and_date = executor.submit(
-            get_latest_reading, client, config.GCP_TEMP_KIND)
+            db_access.get_latest_reading, client, config.GCP_TEMP_KIND)
         hmdt_and_date = executor.submit(
-            get_latest_reading, client, config.GCP_HMDT_KIND)
+            db_access.get_latest_reading, client, config.GCP_HMDT_KIND)
         pres_and_date = executor.submit(
-            get_latest_reading, client, config.GCP_PRES_KIND)
+            db_access.get_latest_reading, client, config.GCP_PRES_KIND)
         pm_25_and_date = executor.submit(
-            get_latest_reading, client, config.GCP_PM25_KIND)
+            db_access.get_latest_reading, client, config.GCP_PM25_KIND)
         temp, temp_date = temp_and_date.result()
         hmdt, hmdt_date = hmdt_and_date.result()
         pres, pres_date = pres_and_date.result()
@@ -351,18 +290,18 @@ def route_charts():
     time_to = datetime.now(timezone.utc)
     time_from = time_to - timedelta(days=1)
     with latency:
-        client = create_datastore_client()
+        client = db_access.create_datastore_client()
         temp_history = executor.submit(
-            get_last_readings, client, config.GCP_TEMP_KIND,
+            db_access.get_last_readings, client, config.GCP_TEMP_KIND,
             time_from, time_to)
         hmdt_history = executor.submit(
-            get_last_readings, client, config.GCP_HMDT_KIND,
+            db_access.get_last_readings, client, config.GCP_HMDT_KIND,
             time_from, time_to)
         pres_history = executor.submit(
-            get_last_readings, client, config.GCP_PRES_KIND,
+            db_access.get_last_readings, client, config.GCP_PRES_KIND,
             time_from, time_to)
         pm_25_history = executor.submit(
-            get_last_readings, client, config.GCP_PM25_KIND,
+            db_access.get_last_readings, client, config.GCP_PM25_KIND,
             time_from, time_to)
         temp_history = temp_history.result()
         hmdt_history = hmdt_history.result()
@@ -425,8 +364,8 @@ def route_devices():
     time_to = datetime.now(timezone.utc)
     time_from = time_to - timedelta(days=1)
     with latency:
-        client = create_datastore_client()
-        ground_latency = get_internet_latency_data(
+        client = db_access.create_datastore_client()
+        ground_latency = db_access.get_internet_latency_data(
             client, config.GCP_GROUND_LATENCY_KIND,
             time_from, time_to)
 
