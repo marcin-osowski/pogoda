@@ -85,6 +85,17 @@ def insert_gaps(readings, min_gap_minutes):
     return output_readings
 
 
+def multiply_series(readings, multiplier):
+    """Multiplies all values in the series by a constant."""
+    output_readings = []
+    for value, timestamp in readings:
+        if value is None:
+            output_readings.append((None, timestamp))
+        else:
+            output_readings.append((value * multiplier, timestamp))
+    return output_readings
+
+
 def round_datetime(dt, minutes):
     discard = timedelta(
         minutes=dt.minute % minutes,
@@ -278,11 +289,13 @@ def root():
 
 
 class ChartData(object):
+    """A helper struct to hold chart data."""
 
     def __init__(self, name, description, history):
         self.name = name
         self.description = description
         self.history = history
+
 
 @app.get("/charts")
 def route_charts():
@@ -365,15 +378,51 @@ def route_devices():
     time_from = time_to - timedelta(days=1)
     with latency:
         client = db_access.create_datastore_client()
-        ground_latency = db_access.get_last_readings(
-            client, config.GCP_GROUND_LATENCY_KIND,
+        ground_latency = executor.submit(
+            db_access.get_last_readings,
+            client, config.GCP_GROUND_INTERNET_LATENCY_KIND,
             time_from, time_to)
+        ground_db_latency = executor.submit(
+            db_access.get_last_readings,
+            client, config.GCP_GROUND_DB_LATENCY_KIND,
+            time_from, time_to)
+        ground_db_success = executor.submit(
+            db_access.get_last_readings,
+            client, config.GCP_GROUND_DB_SUCCESS_RATE_KIND,
+            time_from, time_to)
+        ground_latency = ground_latency.result()
+        ground_db_latency = ground_db_latency.result()
+        ground_db_success = ground_db_success.result()
+
+    # Scale from seconds to miliseconds
+    ground_latency = multiply_series(ground_latency, 1000.0)
+    ground_db_latency = multiply_series(ground_db_latency, 1000.0)
 
     # Insert gaps.
-    ground_latency = insert_gaps(ground_latency, min_gap_minutes=20.1)
+    ground_latency = insert_gaps(ground_latency, min_gap_minutes=30.1)
+    ground_db_latency = insert_gaps(ground_db_latency, min_gap_minutes=30.1)
+    ground_db_success = insert_gaps(ground_db_success, min_gap_minutes=30.1)
+
+    # Gather charts
+    chart_datas = []
+    chart_datas.append(ChartData(
+        name="ground_db_latency",
+        description="Ground level: cloud DB write latency [ms]",
+        history=ground_db_latency,
+    ))
+    chart_datas.append(ChartData(
+        name="ground_db_success",
+        description="Ground level: cloud DB write success rate",
+        history=ground_db_success,
+    ))
+    chart_datas.append(ChartData(
+        name="ground_internet_latency",
+        description="Ground level: internet latency [ms]",
+        history=ground_latency,
+    ))
 
     return bottle.template("devices.tpl", dict(
-        ground_latency=ground_latency,
+        chart_datas=chart_datas,
         time_from=time_from,
         time_to=time_to,
         latency=latency.total,
