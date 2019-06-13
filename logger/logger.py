@@ -8,6 +8,7 @@ import arduino_interface
 import cloud_db
 import custom_queue
 import db_buffer
+import logger_stats
 import ping
 
 
@@ -16,6 +17,9 @@ if __name__ == "__main__":
 
     # A queue with data to be written to the DB.
     data_queue = custom_queue.CustomQueue()
+
+    # Logger statistics.
+    logger_statistics = logger_stats.LoggerStatistics()
 
     def thread_kickoff(target, **kwargs):
         kwargs["data_queue"] = data_queue
@@ -40,11 +44,17 @@ if __name__ == "__main__":
     # and inserting them into the DB.
     cloud_uploader_thread = thread_kickoff(
         target=cloud_db.cloud_uploader_loop,
+        logger_statistics=logger_statistics,
     )
 
     # Start the SQLite DB buffer thread.
     sqlite_buffer_thread = thread_kickoff(
         target=db_buffer.sqlite_buffer_loop,
+    )
+
+    # Start the statistics writer thread.
+    logger_statistics_thread = thread_kickoff(
+        target=logger_statistics.statistics_writer_thread,
     )
 
     # Show the "user menu".

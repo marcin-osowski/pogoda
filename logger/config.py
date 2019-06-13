@@ -6,6 +6,12 @@ this_directory=os.path.dirname(os.path.realpath(__file__))
 
 
 #
+# LOGGER
+#
+
+LOGGER_STATS_INTERVAL_SEC=10.0 * 60.0
+
+#
 # ARDUINO
 #
 

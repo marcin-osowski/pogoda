@@ -1,3 +1,4 @@
+from datetime import datetime,timezone
 from google.cloud import datastore
 import os
 import time
@@ -25,7 +26,7 @@ def insert_into_cloud_db(client, elements):
         client.put_multi(ents)
 
 
-def cloud_uploader_loop(data_queue):
+def cloud_uploader_loop(data_queue, logger_statistics):
     """A loop: popping items from queue, inserting them into the cloud DB.
 
     If there's multiple items pending in the queue it will attempt to move
@@ -52,14 +53,25 @@ def cloud_uploader_loop(data_queue):
 
                 # Try to write.
                 written = False
+                time_start = datetime.now(timezone.utc)
                 try:
                     insert_into_cloud_db(client, elements)
                     written = True
                 finally:
-                    if not written:
+                    if written:
+                        # Record the success.
+                        db_latency = datetime.now(timezone.utc) - time_start
+                        db_latency_ms = db_latency.total_seconds() * 1000.0
+                        logger_statistics.cloud_db_write_result(
+                                success=True,
+                                latency_ms=db_latency_ms)
+                    else:
                         # Put back elements in the readings queue
                         for timestamp, kind, value in elements:
                             data_queue.put_return(timestamp, kind, value)
+                        # Record the failure.
+                        logger_statistics.cloud_db_write_result(success=False)
+
         except Exception as e:
             print("Problem while inserting data into the cloud DB.")
             print(e)
