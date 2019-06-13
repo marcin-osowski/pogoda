@@ -22,14 +22,15 @@ class LoggerStatistics(object):
         self._number_of_new_readings = 0
         self._timestamp_start = datetime.now(timezone.utc)
 
-    def cloud_db_write_result(self, success, latency_ms=None, elements=0):
+    def cloud_db_write_result(self, success, latency=None, elements=0):
         """Saves a single cloud DB write result.
 
-        If success is true latency must be passed (in ms)."""
+        If success is True latency must be passed (in s) and the
+        number of elements written."""
         with self._lock:
             if success:
                 self._cloud_db_successes.append(True)
-                self._cloud_db_latencies.append(float(latency_ms))
+                self._cloud_db_latencies.append(float(latency))
                 self._cloud_db_elements_written += elements
                 self._last_cloud_db_success_time = datetime.now(timezone.utc)
             else:
