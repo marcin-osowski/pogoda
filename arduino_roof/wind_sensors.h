@@ -14,8 +14,8 @@ class WindSpeedMeasurement {
   void start();
 
   // Returns the average wind speed in meters / second
-  // since the last start_recording() call.
-  // start_recording() must be called first.
+  // since the last start() call.
+  // start() must be called first.
   float average_wind_speed();
 
  private:
