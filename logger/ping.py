@@ -44,7 +44,7 @@ def get_internet_latency():
     ]
     latency = None
     for host in hosts:
-        host_latency = get_host_latency(target=host, timeout_sec=0.5)
+        host_latency = get_host_latency(target=host, timeout_sec=1)
         if host_latency is None:
             # Target unreachable.
             continue
