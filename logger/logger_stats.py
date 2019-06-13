@@ -114,7 +114,11 @@ class LoggerStatistics(object):
         while True:
             try:
                 time.sleep(config.LOGGER_STATS_INTERVAL_SEC)
-                self._put_stats_once(data_queue)
+                if data_queue.qsize() >= config.MAX_QUEUE_SIZE:
+                    # Dropping data, queue too long.
+                    pass
+                else:
+                    self._put_stats_once(data_queue)
             except Exception as e:
                 print("Problem in the statistics writer thread.")
                 print(e)
