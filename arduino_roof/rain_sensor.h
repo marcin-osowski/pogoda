@@ -13,10 +13,9 @@ class RainAmountMeasurement {
   // Can be used repeatedly, will re-start measurements.
   void start();
 
-  // Finishes wind speed measurement.
-  // start_recording() must be called first.
   // Returns the amount of rain that has fallen
-  // since start_recording, in mm.
+  // since start(), in mm.
+  // start() must be called first.
   float rain_amount();
 
  private:
