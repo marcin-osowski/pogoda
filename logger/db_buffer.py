@@ -21,6 +21,7 @@ class SQLiteBuffer(object):
             detect_types=sqlite3.PARSE_DECLTYPES)
         self._rebuild_schema()
         self._recount_elements()
+        print("Connected to SQLite database at", config.SQLITE_DB_FILE)
 
     def rows_in_db(self):
         with self._lock:

@@ -9,6 +9,7 @@ import cloud_db
 import config
 import custom_queue
 import db_buffer
+import instance_config
 import logger_stats
 import ping
 
@@ -19,6 +20,10 @@ if __name__ == "__main__":
         print("Warning")
         print("Running in dry run mode. No data will be written to the cloud DB.")
         print()
+
+    print("Logger instance name for GCP:", instance_config.GCP_INSTANCE_NAME_PREFIX)
+    print("Logger interval:", config.LOGGER_INTERVAL_SEC, "sec")
+    print("Logger stats interval:", config.LOGGER_STATS_INTERVAL_SEC, "sec")
 
     # A queue with data to be written to the DB.
     data_queue = custom_queue.CustomQueue()
@@ -75,6 +80,7 @@ if __name__ == "__main__":
     time.sleep(10.0)
     while True:
         try:
+            print()
             input("Press enter to show stats ")
             print()
 

@@ -9,7 +9,9 @@ import config
 def create_datastore_client():
     """Creates a Client, to connect to the Datastore DB."""
     os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = config.GCP_CREDENTIALS
-    return datastore.Client(project=config.GCP_PROJECT)
+    client = datastore.Client(project=config.GCP_PROJECT)
+    print("Connected to cloud Datastore database, GCP project", config.GCP_PROJECT)
+    return client
 
 
 def insert_into_cloud_db(client, elements):

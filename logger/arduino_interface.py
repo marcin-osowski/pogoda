@@ -63,9 +63,9 @@ class WeatherDataSource(object):
             return self._readings[key]
 
     def _stream_reader(self, data_queue, logger_statistics):
-        print("Opening %s" % config.COMM_PORT)
+        print("Opening Arduino comm port at", config.COMM_PORT)
         with io.open(config.COMM_PORT, mode='rt', buffering=1, errors='replace') as stream:
-            print("Opened %s" % config.COMM_PORT)
+            print("Opened", config.COMM_PORT)
             while True:
                 line = stream.readline()
                 if not line:

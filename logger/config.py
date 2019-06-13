@@ -9,6 +9,9 @@ this_directory=os.path.dirname(os.path.realpath(__file__))
 # LOGGER
 #
 
+# Interval for scraping the Arduino readings data.
+LOGGER_INTERVAL_SEC=120.0
+
 # How often logger process stats (such as DB latency, success
 # rate, internet latency) should be collected and put into the
 # DB queue.
@@ -24,9 +27,6 @@ LOGGER_DRY_RUN=False
 
 # The port with Arduino data stream.
 COMM_PORT="/dev/ttyUSB0"
-
-# Interval for scraping the Arduino readings data.
-LOGGER_INTERVAL_SEC=120
 
 
 #
