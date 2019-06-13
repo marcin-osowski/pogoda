@@ -77,9 +77,9 @@ if __name__ == "__main__":
             print("Total number of new readings:", number_of_new_readings)
             print("Elements currently in the queue:", elements_in_queue)
             print("Elements in the SQLite DB:", sqlite_elements)
-            print("Time since cloud DB write success:",
+            print("Time since last cloud DB write success:",
                   time_since_cloud_success)
-            print("Time since cloud DB write failure:",
+            print("Time since last cloud DB write failure:",
                   time_since_cloud_failure)
             print("Program running (time):", time_running)
             print()
