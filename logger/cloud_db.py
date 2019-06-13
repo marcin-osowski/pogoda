@@ -63,8 +63,10 @@ def cloud_uploader_loop(data_queue, logger_statistics):
                         db_latency = datetime.now(timezone.utc) - time_start
                         db_latency_ms = db_latency.total_seconds() * 1000.0
                         logger_statistics.cloud_db_write_result(
-                                success=True,
-                                latency_ms=db_latency_ms)
+                            success=True,
+                            latency_ms=db_latency_ms,
+                            elements=len(elements),
+                        )
                     else:
                         # Put back elements in the readings queue
                         for timestamp, kind, value in elements:

@@ -65,13 +65,22 @@ if __name__ == "__main__":
             # Gather data.
             elements_in_queue = data_queue.qsize()
             number_of_new_readings = logger_statistics.number_of_new_readings()
+            cloud_db_elements_written = logger_statistics.cloud_db_elements_written()
             sqlite_elements = db_buffer.count_sqlite_elements()
+            time_since_cloud_success = logger_statistics.cloud_db_time_since_success()
+            time_since_cloud_failure = logger_statistics.cloud_db_time_since_failure()
             time_running = logger_statistics.time_running()
 
             # Show it
-            print("Elements currently in the queue:", elements_in_queue)
+            print("Total number of elements written to cloud DB:",
+                  cloud_db_elements_written)
             print("Total number of new readings:", number_of_new_readings)
+            print("Elements currently in the queue:", elements_in_queue)
             print("Elements in the SQLite DB:", sqlite_elements)
+            print("Time since cloud DB write success:",
+                  time_since_cloud_success)
+            print("Time since cloud DB write failure:",
+                  time_since_cloud_failure)
             print("Program running (time):", time_running)
             print()
 

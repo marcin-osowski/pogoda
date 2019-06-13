@@ -16,10 +16,13 @@ class LoggerStatistics(object):
         self._lock = threading.Lock()
         self._cloud_db_successes = []
         self._cloud_db_latencies = []
+        self._cloud_db_elements_written = 0
+        self._last_cloud_db_success_time = None
+        self._last_cloud_db_failure_time = None
         self._number_of_new_readings = 0
         self._timestamp_start = datetime.now(timezone.utc)
 
-    def cloud_db_write_result(self, success, latency_ms=None):
+    def cloud_db_write_result(self, success, latency_ms=None, elements=0):
         """Saves a single cloud DB write result.
 
         If success is true latency must be passed (in ms)."""
@@ -27,8 +30,11 @@ class LoggerStatistics(object):
             if success:
                 self._cloud_db_successes.append(True)
                 self._cloud_db_latencies.append(float(latency_ms))
+                self._cloud_db_elements_written += elements
+                self._last_cloud_db_success_time = datetime.now(timezone.utc)
             else:
                 self._cloud_db_successes.append(False)
+                self._last_cloud_db_failure_time = datetime.now(timezone.utc)
 
     def register_new_reading(self):
         """Registers a new reading."""
@@ -36,8 +42,28 @@ class LoggerStatistics(object):
             self._number_of_new_readings += 1
 
     def number_of_new_readings(self):
+        """Returns the total amount of new readings."""
         with self._lock:
             return self._number_of_new_readings
+
+    def cloud_db_elements_written(self):
+        """Returns the total amount of elements written to the cloud DB."""
+        with self._lock:
+            return self._cloud_db_elements_written
+
+    def cloud_db_time_since_success(self):
+        """Returns the time since last cloud DB write success, or None."""
+        with self._lock:
+            if self._last_cloud_db_success_time is None:
+                return None
+            return datetime.now(timezone.utc) - self._last_cloud_db_success_time
+
+    def cloud_db_time_since_failure(self):
+        """Returns the time since last cloud DB write failure, or None."""
+        with self._lock:
+            if self._last_cloud_db_failure_time is None:
+                return None
+            return datetime.now(timezone.utc) - self._last_cloud_db_failure_time
 
     def time_running(self):
         """Returns the total time running."""
