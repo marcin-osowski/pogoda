@@ -9,7 +9,13 @@ this_directory=os.path.dirname(os.path.realpath(__file__))
 # LOGGER
 #
 
+# How often logger process stats should be collected
+# and put into the DB queue.
 LOGGER_STATS_INTERVAL_SEC=10.0 * 60.0
+
+# When in dry run logger will print data to stdout
+# instead of pushing it to the cloud DB.
+LOGGER_DRY_RUN=False
 
 #
 # ARDUINO

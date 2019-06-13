@@ -14,6 +14,11 @@ def create_datastore_client():
 
 def insert_into_cloud_db(client, elements):
     """Inserts entries into the cloud DB."""
+    if config.LOGGER_DRY_RUN:
+        for timestamp, kind, value in elements:
+            print(timestamp, kind, value)
+        return
+
     ents = []
     for timestamp, kind, value in elements:
         key = client.key(kind)
