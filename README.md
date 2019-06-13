@@ -18,16 +18,16 @@ Frontend: https://pogoda.osowski.info
 4. `frontend/`: a web server, presents the data from the
    Datastore database (Python).
 
-## Used sensors
+## Running sensors
 1. Temperature and humidity:
    [AM2301](https://kropochev.com/downloads/humidity/AM2301.pdf)
 2. Air pressure:
    [BMP085](https://www.sparkfun.com/datasheets/Components/General/BST-BMP085-DS000-05.pdf)
 3. Air quality (particulate matter):
    [PMS5003](https://cdn-learn.adafruit.com/downloads/pdf/pm25-air-quality-sensor.pdf)
-4. Wind direction, wind speed and rain mm:
-   [80422](https://www.sparkfun.com/datasheets/Sensors/Weather/Weather%20Sensor%20Assembly..pdf)
 
 ## Planned sensors
-1. Lightning detection:
+1. Wind direction, wind speed and rain mm:
+   [80422](https://www.sparkfun.com/datasheets/Sensors/Weather/Weather%20Sensor%20Assembly..pdf)
+2. Lightning detection:
    [AS3935](https://www.mouser.com/ds/2/588/ams_AS3935_Datasheet_EN_v5-1214568.pdf)
