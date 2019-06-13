@@ -17,6 +17,10 @@ class LoggerStatistics(object):
         self._total_comm_lines_read = 0
         self._total_comm_parsed_lines_read = 0
         self._total_comm_bytes_read = 0
+        self._arduino_bps_last_time = None
+        self._arduino_bps_last_bytes = None
+        self._arduino_lps_last_time = None
+        self._arduino_lps_last_lines = None
         self._cloud_db_successes = []
         self._cloud_db_latencies = []
         self._cloud_db_elements_written = 0
@@ -127,7 +131,31 @@ class LoggerStatistics(object):
             self._cloud_db_latencies = []
             return avg_latency
 
+    def _get_and_update_arduino_bps(self):
+        with self._lock:
+            bps = None
+            if self._arduino_bps_last_time is not None:
+                bytes_change = self._total_comm_bytes_read - self._arduino_bps_last_bytes
+                time_change = datetime.now(timezone.utc) - self._arduino_bps_last_time
+                bps = float(bytes_change) / time_change.total_seconds()
+            self._arduino_bps_last_time = datetime.now(timezone.utc)
+            self._arduino_bps_last_bytes = self._total_comm_bytes_read
+        return bps
+
+    def _get_and_update_arduino_lps(self):
+        with self._lock:
+            lps = None
+            if self._arduino_lps_last_time is not None:
+                bytes_change = self._total_comm_bytes_read - self._arduino_lps_last_bytes
+                time_change = datetime.now(timezone.utc) - self._arduino_lps_last_time
+                lps = float(bytes_change) / time_change.total_seconds()
+            self._arduino_lps_last_time = datetime.now(timezone.utc)
+            self._arduino_lps_last_bytes = self._total_comm_bytes_read
+        return lps
+
     def _put_stat(self, data_queue, name, value):
+        if value is None:
+            return
         timestamp = datetime.now(timezone.utc)
         kind = (instance_config.GCP_INSTANCE_NAME_PREFIX +
                 config.GCP_CONN_QUALITY_PREFIX +
@@ -142,6 +170,10 @@ class LoggerStatistics(object):
         self._put_stat(data_queue, "cloud_db_write_success_rate", success_rate)
         avg_latency = self._get_and_clear_avg_db_latency()
         self._put_stat(data_queue, "cloud_db_write_latency", avg_latency)
+        bps = self._get_and_update_arduino_bps()
+        self._put_stat(data_queue, "arduino_comm_bps", bps)
+        lps = self._get_and_update_arduino_lps()
+        self._put_stat(data_queue, "arduino_comm_lps", lps)
 
     def statistics_writer_thread(self, data_queue, logger_statistics):
         while True:
