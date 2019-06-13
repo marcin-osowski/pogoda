@@ -76,6 +76,8 @@ if __name__ == "__main__":
             sqlite_elements = db_buffer.count_sqlite_elements()
             time_since_cloud_success = logger_statistics.cloud_db_time_since_success()
             time_since_cloud_failure = logger_statistics.cloud_db_time_since_failure()
+            comm_lines_read = logger_statistics.total_comm_lines_read()
+            comm_bytes_read = logger_statistics.total_comm_bytes_read()
             time_running = logger_statistics.time_running()
 
             # Show it
@@ -88,6 +90,10 @@ if __name__ == "__main__":
                   time_since_cloud_success)
             print("Time since last cloud DB write failure:",
                   time_since_cloud_failure)
+            print("Lines read from Arduino comm port:",
+                  comm_lines_read)
+            print("Bytes read from Arduino comm port:",
+                  comm_bytes_read)
             print("Program running (time):", time_running)
             print()
 

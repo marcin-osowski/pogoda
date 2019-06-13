@@ -43,6 +43,12 @@ class WeatherDataSource(object):
     # The available readings.
     readings = collections.defaultdict(lambda: LastValueRead())
 
+    # Total number of nonempty lines read from the comm port.
+    num_lines_read = 0
+
+    # Total number of bytes read from the comm port.
+    num_bytes_read = 0
+
     # Reader thread spawn lock
     _lock = threading.Lock()
 
@@ -82,6 +88,10 @@ class WeatherDataSource(object):
                 if not line:
                     # Empty line (except for newline character).
                     continue
+
+                # Update stats.
+                WeatherDataSource.num_lines_read += 1
+                WeatherDataSource.num_bytes_read += len(line)
 
                 match = re.match("^([^:]+): ([0-9.]+)$", line)
                 if not match:
@@ -148,7 +158,15 @@ def arduino_scraper_loop(data_queue, logger_statistics):
 
     while True:
         try:
+            # Wait for the next reading.
             time.sleep(config.LOGGER_INTERVAL_SEC)
+
+            # Update comm port reading statistics.
+            logger_statistics.set_total_comm_lines_read(
+                WeatherDataSource.num_lines_read)
+            logger_statistics.set_total_comm_bytes_read(
+                WeatherDataSource.num_bytes_read)
+
             if data_queue.qsize() >= config.MAX_QUEUE_SIZE:
                 # Dropping data, queue too long.
                 pass

@@ -14,6 +14,8 @@ class LoggerStatistics(object):
 
     def __init__(self):
         self._lock = threading.Lock()
+        self._total_comm_lines_read = 0
+        self._total_comm_bytes_read = 0
         self._cloud_db_successes = []
         self._cloud_db_latencies = []
         self._cloud_db_elements_written = 0
@@ -21,6 +23,26 @@ class LoggerStatistics(object):
         self._last_cloud_db_failure_time = None
         self._number_of_new_readings = 0
         self._timestamp_start = datetime.now(timezone.utc)
+
+    def set_total_comm_lines_read(self, total_comm_lines_read):
+        """Sets the amount of lines read from the comm port."""
+        with self._lock:
+            self._total_comm_lines_read = total_comm_lines_read
+
+    def set_total_comm_bytes_read(self, total_comm_bytes_read):
+        """Sets the amount of bytes read from the comm port."""
+        with self._lock:
+            self._total_comm_bytes_read = total_comm_bytes_read
+
+    def total_comm_lines_read(self):
+        """Returns the amount of lines read from the comm port."""
+        with self._lock:
+            return self._total_comm_lines_read
+
+    def total_comm_bytes_read(self):
+        """Returns the amount of bytes read from the comm port."""
+        with self._lock:
+            return self._total_comm_bytes_read
 
     def cloud_db_write_result(self, success, latency=None, elements=0):
         """Saves a single cloud DB write result.
