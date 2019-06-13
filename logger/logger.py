@@ -6,6 +6,7 @@ import time
 
 import arduino_interface
 import cloud_db
+import config
 import custom_queue
 import db_buffer
 import logger_stats
@@ -13,6 +14,12 @@ import ping
 
 
 if __name__ == "__main__":
+    if config.LOGGER_DRY_RUN:
+        print()
+        print("Warning")
+        print("Running in dry run mode. No data will be written to the cloud DB.")
+        print()
+
     # A queue with data to be written to the DB.
     data_queue = custom_queue.CustomQueue()
 
