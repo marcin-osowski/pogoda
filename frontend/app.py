@@ -365,7 +365,7 @@ def route_devices():
     time_from = time_to - timedelta(days=1)
     with latency:
         client = db_access.create_datastore_client()
-        ground_latency = db_access.get_internet_latency_data(
+        ground_latency = db_access.get_last_readings(
             client, config.GCP_GROUND_LATENCY_KIND,
             time_from, time_to)
 

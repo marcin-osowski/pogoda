@@ -29,24 +29,6 @@ def get_latest_reading(client, name):
     return value, timestamp
 
 
-def get_internet_latency_data(client, kind, time_from, time_to):
-    query = client.query(kind=kind)
-    query.add_filter("timestamp", ">=", time_from)
-    query.add_filter("timestamp", "<=", time_to)
-    query.order = ["timestamp"]
-
-    parsed_results = []
-    for entity in query.fetch():
-        if "timestamp" not in entity:
-            continue
-        timestamp = entity["timestamp"]
-        value = None
-        if "value" in entity:
-            value = entity["value"]
-        parsed_results.append((value, timestamp))
-    return parsed_results
-
-
 def get_last_readings(client, name, time_from, time_to):
     """Returns values and timestamps of recent readings."""
     query = client.query(kind=name)
