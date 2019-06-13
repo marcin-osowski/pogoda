@@ -78,7 +78,7 @@ def conn_quality_scraper_loop(data_queue, logger_statistics):
 
     while True:
         try:
-            time.sleep(config.LOGGER_INTERVAL_SEC)
+            time.sleep(config.LOGGER_STATS_INTERVAL_SEC)
             if data_queue.qsize() >= config.MAX_QUEUE_SIZE:
                 # Dropping data, queue too long
                 pass
