@@ -62,7 +62,7 @@ class SQLiteBuffer(object):
         finally:
             for timestamp, kind, value in elements:
                 # Return unused elements.
-                data_queue.put_return(timestamp, kind, value)
+                data_queue.put(timestamp, kind, value)
 
     def fetch_from_sqlite(self, data_queue):
         with self._lock:
@@ -94,7 +94,7 @@ class SQLiteBuffer(object):
 
             # Push elements to the queue
             for timestamp, kind, value in elements:
-                data_queue.put_return(timestamp, kind, value)
+                data_queue.put(timestamp, kind, value)
 
     # Private functions.
 

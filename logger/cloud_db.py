@@ -74,7 +74,7 @@ def cloud_uploader_loop(data_queue, logger_statistics):
                     else:
                         # Put back elements in the readings queue
                         for timestamp, kind, value in elements:
-                            data_queue.put_return(timestamp, kind, value)
+                            data_queue.put(timestamp, kind, value)
                         # Record the failure.
                         logger_statistics.cloud_db_write_result(success=False)
 
