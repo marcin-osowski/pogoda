@@ -100,7 +100,7 @@ class WeatherDataSource(object):
                 WeatherDataSource.readings[kind].set(value)
 
 
-def scrape_readings_once(data_queue, logger_statistics):
+def scrape_readings_once(data_queue, logger_statistics, last_timestamp_read):
     """Retrieves readings and inserts it into the queue, once."""
     for comm_name, name in config.GCP_READING_NAME_TRANSLATION.items():
         value, timestamp = WeatherDataSource.readings[comm_name].get_with_timestamp()
@@ -110,19 +110,28 @@ def scrape_readings_once(data_queue, logger_statistics):
         if timestamp is None:
             # Timestamp is missing, ignore.
             continue
-        latency = datetime.now(timezone.utc) - timestamp
-        if latency >= timedelta(seconds=config.LOGGER_INTERVAL_SEC):
-            # Data too old
-            continue
+
+        if comm_name in last_timestamp_read:
+            if timestamp <= last_timestamp_read[comm_name]:
+                # Data has not changed since last access.
+                continue
+
+
+        # Compute the DB kind.
         kind = (instance_config.GCP_INSTANCE_NAME_PREFIX +
                 config.GCP_READING_PREFIX +
                 name)
+
+        # Push it.
         data_queue.put(
             timestamp=timestamp,
             kind=kind,
             value=value,
         )
         logger_statistics.register_new_reading()
+
+        # Store last access timestamp.
+        last_timestamp_read[comm_name] = datetime.now(timezone.utc)
 
 
 def arduino_scraper_loop(data_queue, logger_statistics):
@@ -133,6 +142,10 @@ def arduino_scraper_loop(data_queue, logger_statistics):
     # Make sure the reading thread is running.
     WeatherDataSource.Start()
 
+    # The timestamp of the last value read from Arduino.
+    # Format: comm_name -> datetime
+    last_timestamp_read = dict()
+
     while True:
         try:
             time.sleep(config.LOGGER_INTERVAL_SEC)
@@ -140,7 +153,7 @@ def arduino_scraper_loop(data_queue, logger_statistics):
                 # Dropping data, queue too long.
                 pass
             else:
-                scrape_readings_once(data_queue, logger_statistics)
+                scrape_readings_once(data_queue, logger_statistics, last_timestamp_read)
         except Exception as e:
             print("Problem while getting readings data.")
             print(e)
