@@ -76,7 +76,7 @@ if __name__ == "__main__":
                   cloud_db_elements_written)
             print("Total number of new readings:", number_of_new_readings)
             print("Elements currently in the queue:", elements_in_queue)
-            print("Elements in the SQLite DB:", sqlite_elements)
+            print("Elements currently in the SQLite DB:", sqlite_elements)
             print("Time since last cloud DB write success:",
                   time_since_cloud_success)
             print("Time since last cloud DB write failure:",
