@@ -390,9 +390,14 @@ def route_devices():
             db_access.get_last_readings,
             client, config.GCP_GROUND_DB_SUCCESS_RATE_KIND,
             time_from, time_to)
+        ground_arduino_bps = executor.submit(
+            db_access.get_last_readings,
+            client, config.GCP_GROUND_ARDUINO_BPS,
+            time_from, time_to)
         ground_latency = ground_latency.result()
         ground_db_latency = ground_db_latency.result()
         ground_db_success = ground_db_success.result()
+        ground_arduino_bps = ground_arduino_bps.result()
 
     # Scale from seconds to miliseconds
     ground_latency = multiply_series(ground_latency, 1000.0)
@@ -402,6 +407,7 @@ def route_devices():
     ground_latency = insert_gaps(ground_latency, min_gap_minutes=30.1)
     ground_db_latency = insert_gaps(ground_db_latency, min_gap_minutes=30.1)
     ground_db_success = insert_gaps(ground_db_success, min_gap_minutes=30.1)
+    ground_arduino_bps = insert_gaps(ground_arduino_bps, min_gap_minutes=30.1)
 
     # Gather charts
     chart_datas = []
@@ -414,6 +420,11 @@ def route_devices():
         name="ground_db_success",
         description="Ground level: cloud DB write success rate",
         history=ground_db_success,
+    ))
+    chart_datas.append(ChartData(
+        name="ground_arduino_bps",
+        description="Ground level: Arduino comm output speed [bytes/sec]",
+        history=ground_arduino_bps,
     ))
     chart_datas.append(ChartData(
         name="ground_internet_latency",

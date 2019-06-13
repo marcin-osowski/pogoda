@@ -12,6 +12,7 @@ GCP_PM25_KIND="wczasowa:ground_level:reading:pm_25_env"
 GCP_GROUND_INTERNET_LATENCY_KIND="wczasowa:ground_level:connection:internet_latency"
 GCP_GROUND_DB_LATENCY_KIND="wczasowa:ground_level:connection:cloud_db_write_latency"
 GCP_GROUND_DB_SUCCESS_RATE_KIND="wczasowa:ground_level:connection:cloud_db_write_success_rate"
+GCP_GROUND_ARDUINO_BPS="wczasowa:ground_level:connection:arduino_comm_bps"
 
 # Web server settings.
 PROD_HTTP_HOST='127.0.0.1'
