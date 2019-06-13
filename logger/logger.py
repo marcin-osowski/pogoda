@@ -13,8 +13,6 @@ import ping
 
 
 if __name__ == "__main__":
-    timestamp_start = datetime.now(timezone.utc)
-
     # A queue with data to be written to the DB.
     data_queue = custom_queue.CustomQueue()
 
@@ -23,6 +21,7 @@ if __name__ == "__main__":
 
     def thread_kickoff(target, **kwargs):
         kwargs["data_queue"] = data_queue
+        kwargs["logger_statistics"] = logger_statistics
         thread = threading.Thread(
             target=target,
             kwargs=kwargs,
@@ -44,7 +43,6 @@ if __name__ == "__main__":
     # and inserting them into the DB.
     cloud_uploader_thread = thread_kickoff(
         target=cloud_db.cloud_uploader_loop,
-        logger_statistics=logger_statistics,
     )
 
     # Start the SQLite DB buffer thread.
@@ -66,13 +64,13 @@ if __name__ == "__main__":
 
             # Gather data.
             elements_in_queue = data_queue.qsize()
-            new_elements_put = data_queue.total_new_elements_put()
+            number_of_new_readings = logger_statistics.number_of_new_readings()
             sqlite_elements = db_buffer.count_sqlite_elements()
-            time_running = datetime.now(timezone.utc) - timestamp_start
+            time_running = logger_statistics.time_running()
 
             # Show it
             print("Elements currently in the queue:", elements_in_queue)
-            print("Total new elements put in the queue:", new_elements_put)
+            print("Total number of new readings:", number_of_new_readings)
             print("Elements in the SQLite DB:", sqlite_elements)
             print("Program running (time):", time_running)
             print()

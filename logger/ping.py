@@ -57,21 +57,21 @@ def get_internet_latency():
     return latency
 
 
-def scrape_conn_quality_once(data_queue):
+def scrape_conn_quality_once(data_queue, logger_statistics):
     internet_latency = get_internet_latency()
     if internet_latency is not None:
         timestamp = datetime.now(timezone.utc)
         kind = (instance_config.GCP_INSTANCE_NAME_PREFIX +
                 config.GCP_CONN_QUALITY_PREFIX +
                 "internet_latency")
-        data_queue.put_new(
+        data_queue.put(
             timestamp=timestamp,
             kind=kind,
             value=internet_latency,
         )
 
 
-def conn_quality_scraper_loop(data_queue):
+def conn_quality_scraper_loop(data_queue, logger_statistics):
     """A continuous scraper of connection quality data.
 
     Should be running in a separate daemon thread."""
@@ -83,7 +83,7 @@ def conn_quality_scraper_loop(data_queue):
                 # Dropping data, queue too long
                 pass
             else:
-                scrape_conn_quality_once(data_queue)
+                scrape_conn_quality_once(data_queue, logger_statistics)
         except Exception as e:
             print("Problem while getting connection quality data.")
             print(e)

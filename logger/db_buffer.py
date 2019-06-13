@@ -128,7 +128,7 @@ CREATE TABLE IF NOT EXISTS data_buffer (
 )""")
 
 
-def sqlite_buffer_loop(data_queue):
+def sqlite_buffer_loop(data_queue, logger_statistics):
     while True:
         sqlite_buffer = SQLiteBuffer()
         print("SQLite buffer has %d elements" % sqlite_buffer.rows_in_db())
