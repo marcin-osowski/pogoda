@@ -102,7 +102,8 @@ GCP_READING_NAME_TRANSLATION={
 
     "Wind speed": "wind_speed",
     "Wind direction": "wind_direction",
-    "Rain since last output": "rain_mm",
+    # Disabled. Needs separate handling.
+    # "Rain since last output": "rain_mm",
 }
 
 # The entity kind for connection quality data is fully specified as:
