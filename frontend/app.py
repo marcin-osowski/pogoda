@@ -244,7 +244,7 @@ def date_to_seconds_ago(date):
 def root():
     latency = BackendLatencyTimer()
     with latency:
-        client = db_access.create_datastore_client()
+        client = db_access.get_datastore_client()
         temp_and_date = executor.submit(
             db_access.get_latest_reading, client, config.GCP_TEMP_KIND)
         hmdt_and_date = executor.submit(
@@ -303,7 +303,7 @@ def route_charts():
     time_to = datetime.now(timezone.utc)
     time_from = time_to - timedelta(days=1)
     with latency:
-        client = db_access.create_datastore_client()
+        client = db_access.get_datastore_client()
         temp_history = executor.submit(
             db_access.get_last_readings, client, config.GCP_TEMP_KIND,
             time_from, time_to)
@@ -377,7 +377,7 @@ def route_devices():
     time_to = datetime.now(timezone.utc)
     time_from = time_to - timedelta(days=1)
     with latency:
-        client = db_access.create_datastore_client()
+        client = db_access.get_datastore_client()
         ground_latency = executor.submit(
             db_access.get_last_readings,
             client, config.GCP_GROUND_INTERNET_LATENCY_KIND,

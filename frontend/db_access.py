@@ -4,10 +4,15 @@ import os
 import config
 
 
-def create_datastore_client():
-    """Creates a Datastore Client object."""
-    os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = config.GCP_CREDENTIALS
-    return datastore.Client(project=config.GCP_PROJECT)
+_DATASTORE_CLIENT=None
+
+def get_datastore_client():
+    """Creates a (or returns a cached) Datastore Client object."""
+    global _DATASTORE_CLIENT
+    if _DATASTORE_CLIENT is None:
+        os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = config.GCP_CREDENTIALS
+        _DATASTORE_CLIENT = datastore.Client(project=config.GCP_PROJECT)
+    return _DATASTORE_CLIENT
 
 
 def get_latest_reading(client, name):
