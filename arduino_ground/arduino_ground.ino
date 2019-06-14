@@ -83,6 +83,14 @@ void setup() {
   // Initializes the PMS serial port.
   pmsSerial.begin(9600);
 
+  // Print the welcome message.
+  Serial.println("Multi-sensor.");
+  Serial.println("Humidity unit: % (relative humidity)");
+  Serial.println("Temperature unit: degrees C");
+  Serial.println("Pressure unit: hPa");
+  Serial.println("PM 1.0, 2.5, 10.0 unit: ug/m^3");
+  Serial.println("Waiting for first measurement");
+
   // Wait a few seconds at start, so that sensorts settle.
   delay(5000);
 }
