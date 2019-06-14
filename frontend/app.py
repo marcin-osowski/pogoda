@@ -335,10 +335,18 @@ def route_charts():
         pm_25_history = executor.submit(
             db_access.get_last_readings, client, config.GCP_PM25_KIND,
             time_from, time_to)
+        wnd_speed_history = executor.submit(
+            db_access.get_last_readings, client, config.GCP_WND_SPEED_KIND,
+            time_from, time_to)
+        wnd_dir_history = executor.submit(
+            db_access.get_last_readings, client, config.GCP_WND_DIR_KIND,
+            time_from, time_to)
         temp_history = temp_history.result()
         hmdt_history = hmdt_history.result()
         pres_history = pres_history.result()
         pm_25_history = pm_25_history.result()
+        wnd_speed_history = wnd_speed_history.result()
+        wnd_dir_history = wnd_dir_history.result()
 
     # Vapor pressure and dew point are computed
     # from temperature and humidity.
@@ -352,6 +360,7 @@ def route_charts():
     dew_point_history = apply_smoothing(dew_point_history, minutes=30.1)
     pres_history = apply_smoothing(pres_history, minutes=20.1)
     pm_25_history = apply_smoothing(pm_25_history, minutes=40.1)
+    wnd_speed_history = apply_smoothing(wnd_speed_history, minutes=20.1)
 
     # Insert gaps.
     temp_history = insert_gaps(temp_history, min_gap_minutes=20.1)
@@ -360,6 +369,8 @@ def route_charts():
     dew_point_history = insert_gaps(dew_point_history, min_gap_minutes=20.1)
     pres_history = insert_gaps(pres_history, min_gap_minutes=20.1)
     pm_25_history = insert_gaps(pm_25_history, min_gap_minutes=20.1)
+    wnd_speed_history = insert_gaps(wnd_speed_history, min_gap_minutes=20.1)
+    wnd_dir_history = insert_gaps(wnd_dir_history, min_gap_minutes=20.1)
 
     # Wrap it together in a single list.
     chart_datas = []
@@ -378,6 +389,12 @@ def route_charts():
     chart_datas.append(ChartData(
         name="pres", description="Pressure [hPa]",
         history=pres_history))
+    chart_datas.append(ChartData(
+        name="wnd_speed", description="Wind speed [m/s]",
+        history=wnd_speed_history))
+    chart_datas.append(ChartData(
+        name="wnd_dir", description="Wind direction [degrees]",
+        history=wnd_dir_history))
     chart_datas.append(ChartData(
         name="pm_25", description="PM 2.5 [μg/m³]",
         history=pm_25_history))
