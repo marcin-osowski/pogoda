@@ -7,6 +7,8 @@ GCP_TEMP_KIND="wczasowa:ground_level:reading:temperature"
 GCP_HMDT_KIND="wczasowa:ground_level:reading:humidity"
 GCP_PRES_KIND="wczasowa:ground_level:reading:pressure"
 GCP_PM25_KIND="wczasowa:ground_level:reading:pm_25_env"
+GCP_WND_SPEED_KIND="wczasowa:roof_level:reading:wind_speed"
+GCP_WND_DIR_KIND="wczasowa:roof_level:reading:wind_direction"
 
 # GCP kinds for latency data.
 GCP_GROUND_INTERNET_LATENCY_KIND="wczasowa:ground_level:connection:internet_latency"

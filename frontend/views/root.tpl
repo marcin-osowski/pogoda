@@ -34,9 +34,19 @@
 
       <tr><td colspan=2></td></tr>
 
-      <!-- Pressure -->
-      % if pres is not None:
-          <tr><td>PM 2.5, experimental:</td><td>{{ pm_25 }} μg/m³ </td></tr>
+      <!-- Wind -->
+      % if wnd_speed is not None:
+          <tr><td>Wind speed:</td><td>{{ wnd_speed }} m/s </td></tr>
+      % end
+      % if wnd_dir is not None:
+          <tr><td>Wind direction:</td><td>{{ wnd_dir_text }} ({{ wnd_dir }}°)</td></tr>
+      % end
+
+      <tr><td colspan=2></td></tr>
+
+      <!-- PM 2.5 -->
+      % if pm_25 is not None:
+          <tr><td>PM 2.5:</td><td>{{ pm_25 }} μg/m³ </td></tr>
       % end
     </table>
     <p>&nbsp;</p>

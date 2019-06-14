@@ -240,6 +240,15 @@ def date_to_seconds_ago(date):
     return time_ago.total_seconds()
 
 
+def degrees_to_direction_name(degrees):
+    if degrees is None:
+        return None
+    dirs = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE",
+            "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"]
+    ix = int((degrees + 11.25) / 22.5)
+    return dirs[ix % 16]
+
+
 @app.get("/")
 def root():
     latency = BackendLatencyTimer()
@@ -253,18 +262,23 @@ def root():
             db_access.get_latest_reading, client, config.GCP_PRES_KIND)
         pm_25_and_date = executor.submit(
             db_access.get_latest_reading, client, config.GCP_PM25_KIND)
+        wnd_speed_and_date = executor.submit(
+            db_access.get_latest_reading, client, config.GCP_WND_SPEED_KIND)
+        wnd_dir_and_date = executor.submit(
+            db_access.get_latest_reading, client, config.GCP_WND_DIR_KIND)
         temp, temp_date = temp_and_date.result()
         hmdt, hmdt_date = hmdt_and_date.result()
         pres, pres_date = pres_and_date.result()
         pm_25, pm_25_date = pm_25_and_date.result()
+        wnd_speed, wnd_speed_date = wnd_speed_and_date.result()
+        wnd_dir, wnd_dir_date = wnd_dir_and_date.result()
 
-    temp_ago = date_to_seconds_ago(temp_date)
-    hmdt_ago = date_to_seconds_ago(hmdt_date)
-    pres_ago = date_to_seconds_ago(pres_date)
-    if None in [temp_ago, hmdt_ago, pres_ago]:
+    dates = [temp_date, hmdt_date, pres_date, wnd_speed_date, wnd_dir_date]
+    if None in dates:
         data_age = None
     else:
-        data_age = max(temp_ago, hmdt_ago, pres_ago)
+        agos = map(date_to_seconds_ago, dates)
+        data_age = max(agos)
 
     if None in [hmdt, temp]:
         vapor_pres = None
@@ -276,6 +290,8 @@ def root():
         vapor_pres = hmdt_and_temp.vapor_pressure()
         dew_point = dew_point_from_vapor_pressure(vapor_pres)
 
+    wnd_dir_text = degrees_to_direction_name(wnd_dir)
+
     return bottle.template("root.tpl", dict(
         temp=temp,
         hmdt=hmdt,
@@ -283,6 +299,9 @@ def root():
         dew_point=dew_point,
         pres=pres,
         pm_25=pm_25,
+        wnd_speed=wnd_speed,
+        wnd_dir=wnd_dir,
+        wnd_dir_text=wnd_dir_text,
         data_age=data_age,
         latency=latency.total,
     ))
@@ -360,7 +379,7 @@ def route_charts():
         name="pres", description="Pressure [hPa]",
         history=pres_history))
     chart_datas.append(ChartData(
-        name="pm_25", description="PM 2.5, experimental [μg/m³]",
+        name="pm_25", description="PM 2.5 [μg/m³]",
         history=pm_25_history))
 
     return bottle.template("charts.tpl", dict(
