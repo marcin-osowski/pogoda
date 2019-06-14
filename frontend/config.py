@@ -10,11 +10,17 @@ GCP_PM25_KIND="wczasowa:ground_level:reading:pm_25_env"
 GCP_WND_SPEED_KIND="wczasowa:roof_level:reading:wind_speed"
 GCP_WND_DIR_KIND="wczasowa:roof_level:reading:wind_direction"
 
-# GCP kinds for latency data.
-GCP_GROUND_INTERNET_LATENCY_KIND="wczasowa:ground_level:connection:internet_latency"
-GCP_GROUND_DB_LATENCY_KIND="wczasowa:ground_level:connection:cloud_db_write_latency"
-GCP_GROUND_DB_SUCCESS_RATE_KIND="wczasowa:ground_level:connection:cloud_db_write_success_rate"
-GCP_GROUND_ARDUINO_BPS="wczasowa:ground_level:connection:arduino_comm_bps"
+# GCP kinds for connection status data.
+GCP_INTERNET_LATENCY="connection:internet_latency"
+GCP_DB_LATENCY="connection:cloud_db_write_latency"
+GCP_DB_SUCCESS_RATE="connection:cloud_db_write_success_rate"
+GCP_ARDUINO_BPS="connection:arduino_comm_bps"
+
+# Names of monitored loggers
+MONITORED_LOGGERS={
+    "ground_level": ("wczasowa:ground_level:", "Ground level"),
+    "roof_level": ("wczasowa:roof_level:", "Roof level"),
+}
 
 # Web server settings.
 PROD_HTTP_HOST='127.0.0.1'

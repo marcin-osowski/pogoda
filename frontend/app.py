@@ -414,62 +414,76 @@ def route_devices():
     time_from = time_to - timedelta(days=1)
     with latency:
         client = db_access.get_datastore_client()
-        ground_latency = executor.submit(
-            db_access.get_last_readings,
-            client, config.GCP_GROUND_INTERNET_LATENCY_KIND,
-            time_from, time_to)
-        ground_db_latency = executor.submit(
-            db_access.get_last_readings,
-            client, config.GCP_GROUND_DB_LATENCY_KIND,
-            time_from, time_to)
-        ground_db_success = executor.submit(
-            db_access.get_last_readings,
-            client, config.GCP_GROUND_DB_SUCCESS_RATE_KIND,
-            time_from, time_to)
-        ground_arduino_bps = executor.submit(
-            db_access.get_last_readings,
-            client, config.GCP_GROUND_ARDUINO_BPS,
-            time_from, time_to)
-        ground_latency = ground_latency.result()
-        ground_db_latency = ground_db_latency.result()
-        ground_db_success = ground_db_success.result()
-        ground_arduino_bps = ground_arduino_bps.result()
+        data_by_logger = dict()
+
+        # Request data
+        for logger_name, (logger_gcp_prefix, _) in config.MONITORED_LOGGERS.items():
+            logger_data = dict()
+            logger_data["latency"] = executor.submit(
+                db_access.get_last_readings,
+                client, logger_gcp_prefix + config.GCP_INTERNET_LATENCY,
+                time_from, time_to)
+            logger_data["db_latency"] = executor.submit(
+                db_access.get_last_readings,
+                client, logger_gcp_prefix + config.GCP_DB_LATENCY,
+                time_from, time_to)
+            logger_data["db_success"] = executor.submit(
+                db_access.get_last_readings,
+                client, logger_gcp_prefix + config.GCP_DB_SUCCESS_RATE,
+                time_from, time_to)
+            logger_data["arduino_bps"] = executor.submit(
+                db_access.get_last_readings,
+                client, logger_gcp_prefix + config.GCP_ARDUINO_BPS,
+                time_from, time_to)
+            data_by_logger[logger_name] = logger_data
+
+        # Get data
+        for logger_name, datas in data_by_logger.items():
+            for name in list(datas.keys()):
+                datas[name] = datas[name].result()
 
     # Scale from seconds to miliseconds
-    ground_latency = multiply_series(ground_latency, 1000.0)
-    ground_db_latency = multiply_series(ground_db_latency, 1000.0)
+    for logger_name, datas in data_by_logger.items():
+        datas["latency"] = multiply_series(datas["latency"], 1000.0)
+        datas["db_latency"] = multiply_series(datas["db_latency"], 1000.0)
 
     # Insert gaps.
-    ground_latency = insert_gaps(ground_latency, min_gap_minutes=30.1)
-    ground_db_latency = insert_gaps(ground_db_latency, min_gap_minutes=30.1)
-    ground_db_success = insert_gaps(ground_db_success, min_gap_minutes=30.1)
-    ground_arduino_bps = insert_gaps(ground_arduino_bps, min_gap_minutes=30.1)
+    for _, datas in data_by_logger.items():
+        for name in list(datas.keys()):
+            datas[name] = insert_gaps(datas[name], min_gap_minutes=30.1)
 
     # Gather charts
-    chart_datas = []
-    chart_datas.append(ChartData(
-        name="ground_db_latency",
-        description="Ground level: cloud DB write latency [ms]",
-        history=ground_db_latency,
-    ))
-    chart_datas.append(ChartData(
-        name="ground_db_success",
-        description="Ground level: cloud DB write success rate",
-        history=ground_db_success,
-    ))
-    chart_datas.append(ChartData(
-        name="ground_arduino_bps",
-        description="Ground level: Arduino comm output speed [bytes/sec]",
-        history=ground_arduino_bps,
-    ))
-    chart_datas.append(ChartData(
-        name="ground_internet_latency",
-        description="Ground level: internet latency [ms]",
-        history=ground_latency,
-    ))
+    charts_by_logger = []
+    for logger_name, (_, logger_description) in config.MONITORED_LOGGERS.items():
+        datas = data_by_logger[logger_name]
+        logger_charts = []
+        logger_charts.append(ChartData(
+            name=logger_name + "_db_latency",
+            description="Cloud DB write latency [ms]",
+            history=datas["db_latency"],
+        ))
+        logger_charts.append(ChartData(
+            name=logger_name + "db_success",
+            description="Cloud DB write success rate",
+            history=datas["db_success"],
+        ))
+        logger_charts.append(ChartData(
+            name=logger_name + "_arduino_bps",
+            description="Arduino comm output speed [bytes/sec]",
+            history=datas["arduino_bps"],
+        ))
+        logger_charts.append(ChartData(
+            name=logger_name + "_internet_latency",
+            description="Internet latency [ms]",
+            history=datas["latency"],
+        ))
+        charts_by_logger.append((logger_name, logger_description, logger_charts))
+
+    # Sort to have predictable order of the charts.
+    charts_by_logger.sort()
 
     return bottle.template("devices.tpl", dict(
-        chart_datas=chart_datas,
+        charts_by_logger=charts_by_logger,
         time_from=time_from,
         time_to=time_to,
         latency=latency.total,
