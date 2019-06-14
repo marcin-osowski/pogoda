@@ -37,6 +37,8 @@ Required libraries:
 #include <Adafruit_BMP085.h>
 #include <SoftwareSerial.h>
 
+#include "pms5003.h"
+
 // Output is written to serial.
 #define SERIAL_BAUD 9600
 
@@ -53,7 +55,9 @@ DHT dht(DHTPIN, DHTTYPE);
 Adafruit_BMP085 bmp;
 
 // Air quality sensor (PMS).
-SoftwareSerial pmsSerial(4, 5);
+#define PMS_DATA_INPUT 4
+#define UNUSED_PMS_DATA_OUTPUT 5
+SoftwareSerial pmsSerial(PMS_DATA_INPUT, UNUSED_PMS_DATA_OUTPUT);
 
 // Set the LCD address to 0x27 for a 16 chars and 2 line display.
 LiquidCrystal_I2C lcd(0x27, 20, 4);
@@ -88,69 +92,15 @@ void setup() {
 //   1: water level
 int display_page = 0;
 
-// For the air quality sensor.
-// Copied from Adafruit's code.
-struct pms5003data {
-  uint16_t framelen;
-  uint16_t pm10_standard, pm25_standard, pm100_standard;
-  uint16_t pm10_env, pm25_env, pm100_env;
-  uint16_t particles_03um, particles_05um, particles_10um, particles_25um, particles_50um, particles_100um;
-  uint16_t unused;
-  uint16_t checksum;
-};
-struct pms5003data pms_data;
-
-boolean readPMSdata() {
-  if (!pmsSerial.available()) {
-    return false;
-  }
-
-  // Read a byte at a time until we get to the special '0x42' start-byte
-  if (pmsSerial.peek() != 0x42) {
-    pmsSerial.read();
-    return false;
-  }
-
-  // Now read all 32 bytes
-  if (pmsSerial.available() < 32) {
-    return false;
-  }
-
-  uint8_t buffer[32];
-  uint16_t sum = 0;
-  pmsSerial.readBytes(buffer, 32);
-
-  // get checksum ready
-  for (uint8_t i=0; i<30; i++) {
-    sum += buffer[i];
-  }
-
-  // The data comes in endian'd, this solves it so it works on all platforms
-  uint16_t buffer_u16[15];
-  for (uint8_t i=0; i<15; i++) {
-    buffer_u16[i] = buffer[2 + i*2 + 1];
-    buffer_u16[i] += (buffer[2 + i*2] << 8);
-  }
-
-  // put it into a nice struct :)
-  memcpy((void *)&pms_data, (void *)buffer_u16, 30);
-
-  if (sum != pms_data.checksum) {
-    // Checksum failure.
-    return false;
-  }
-  // success!
-  return true;
-}
-
 void loop() {
   // At the beginning we busy wait for a while
   // for the PMS unit to start sending data.
   // Note that we may miss the reading if the transmission
   // doesn't start before the loop terminates.
+  struct pms5003data pms_data;
   bool pms_data_available = false;
   for (int i = 0; i < 5000; ++i) {
-    if(readPMSdata()) {
+    if(readPMSdata(&pmsSerial, &pms_data)) {
       pms_data_available = true;
     }
   }
