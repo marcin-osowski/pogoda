@@ -35,6 +35,9 @@ Pin layout (for Arduino Nano):
 // Delay between successive reads (ms).
 #define READ_DELAY_MS (30 * 1000)
 
+// Number of wind direction measurements per read.
+#define WIND_DIRECTION_TIMES_PER_READ 100
+
 
 void setup() {
   // Initialize the output seral port.
@@ -57,25 +60,36 @@ void setup() {
 }
 
 void loop() {
-  // Start measurements.
-  WindSpeedMeasurement wind;
-  wind.start();
-  RainAmountMeasurement rain;
-  rain.start();
+  // Start wind speed measurement.
+  WindSpeedMeasurement wind_speed;
+  wind_speed.start();
 
-  // Wait for a while.
-  delay(READ_DELAY_MS);
+  // Start wind direction measurement.
+  WindDirectionMeasurement wind_direction;
+
+  // Take WIND_DIRECTION_TIMES_PER_READ measurements.
+  for (int i = 0; i < WIND_DIRECTION_TIMES_PER_READ; ++i) {
+    wind_direction.next_measurement();
+    delay(READ_DELAY_MS / WIND_DIRECTION_TIMES_PER_READ);
+  }
+
+  const uint8_t wind_direction_idx =
+    wind_direction.most_common_direction();
 
   // Output data.
   Serial.print("Wind speed: ");
-  Serial.println(wind.average_wind_speed());
+  Serial.println(wind_speed.average_wind_speed());
 
-  Serial.print("Wind direction: ");
-  Serial.println(get_wind_direction());
+  if (wind_direction_idx == 255) {
+    Serial.println("No valid wind direction measurement.");
+  } else {
+    Serial.print("Wind direction: ");
+    Serial.println(wind_direction_to_degrees(wind_direction_idx));
 
-  Serial.print("Wind direction text: ");
-  Serial.println(get_wind_direction_text());
+    Serial.print("Wind direction text: ");
+    Serial.println(wind_direction_to_text(wind_direction_idx));
+  }
 
-  Serial.print("Rain since last output: ");
-  Serial.println(rain.rain_amount());
+  Serial.print("Total rain: ");
+  Serial.println(total_rain_mm());
 }

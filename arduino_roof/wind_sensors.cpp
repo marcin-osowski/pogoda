@@ -65,7 +65,7 @@ void WindSpeedMeasurement::start() {
   initial_millis = millis();
 }
 
-float WindSpeedMeasurement::average_wind_speed() {
+float WindSpeedMeasurement::average_wind_speed() const {
   const uint32_t now_interrupts = get_anemo_interrupt_count();
   const unsigned long now_millis = millis();
 
@@ -88,7 +88,7 @@ static bool cmp_margin(const int value, const int reference) {
   return delta >= -10 && delta <= 10;
 }
 
-float get_wind_direction() {
+uint8_t get_wind_direction_now() {
   const int reading = analogRead(WIND_DIRECTION_PIN);
 
   // Note: the numeric constants were measured for the
@@ -101,130 +101,198 @@ float get_wind_direction() {
   // device.
   if (cmp_margin(reading, 539)) {
     // North.
-    return 0.0f;
+    return 0;
   }
   if (cmp_margin(reading, 318)) {
     // North-east.
-    return 45.0f;
+    return 1;
   }
   if (cmp_margin(reading, 63)) {
     // East.
-    return 90.0f;
+    return 2;
   }
   if (cmp_margin(reading, 127)) {
     // South-east.
-    return 135.0f;
+    return 3;
   }
   if (cmp_margin(reading, 197)) {
     // South.
-    return 180.0f;
+    return 4;
   }
   if (cmp_margin(reading, 432)) {
     // South-west.
-    return 225.0f;
+    return 5;
   }
   if (cmp_margin(reading, 647)) {
     // West.
-    return 270.0f;
+    return 6;
   }
   if (cmp_margin(reading, 607)) {
     // North-west.
-    return 315.0f;
+    return 7;
   }
 
   // Then the 8 minor directions.
   if (cmp_margin(reading, 280)) {
     // North north-east.
-    return 22.5f;
+    return 8;
   }
   if (cmp_margin(reading, 57)) {
     // East north-east.
-    return 67.5f;
+    return 9;
   }
   if (cmp_margin(reading, 44)) {
     // East south-east.
-    return 112.5f;
+    return 10;
   }
   if (cmp_margin(reading, 87)) {
     // South south-east.
-    return 157.5f;
+    return 11;
   }
   if (cmp_margin(reading, 168)) {
     // South south-west.
-    return 202.5f;
+    return 12;
   }
   if (cmp_margin(reading, 410)) {
     // West south-west.
-    return 247.5f;
+    return 13;
   }
   if (cmp_margin(reading, 566)) {
     // West north-west.
-    return 292.5f;
+    return 14;
   }
   if (cmp_margin(reading, 481)) {
     // North north-west.
-    return 337.5f;
+    return 15;
   }
 
-  return -1.0f;
+  // Reading failed.
+  return 255;
 }
 
-const char* get_wind_direction_text() {
-  const int reading = analogRead(WIND_DIRECTION_PIN);
-
-  // Try the 8 major directions first.
-  // Major directions are most commonly output by the
-  // device.
-  if (cmp_margin(reading, 539)) {
-    return "north";
-  }
-  if (cmp_margin(reading, 318)) {
-    return "north-east";
-  }
-  if (cmp_margin(reading, 63)) {
-    return "east";
-  }
-  if (cmp_margin(reading, 127)) {
-    return "south-east";
-  }
-  if (cmp_margin(reading, 197)) {
-    return "south";
-  }
-  if (cmp_margin(reading, 432)) {
-    return "south-west";
-  }
-  if (cmp_margin(reading, 647)) {
-    return "west";
-  }
-  if (cmp_margin(reading, 607)) {
-    return "north-west";
-  }
-
-  // Then the 8 minor directions.
-  if (cmp_margin(reading, 280)) {
-    return "north north-east";
-  }
-  if (cmp_margin(reading, 57)) {
-    return "east north-east";
-  }
-  if (cmp_margin(reading, 44)) {
-    return "east south-east";
-  }
-  if (cmp_margin(reading, 87)) {
-    return "south south-east";
-  }
-  if (cmp_margin(reading, 168)) {
-    return "south south-west";
-  }
-  if (cmp_margin(reading, 410)) {
-    return "west south-west";
-  }
-  if (cmp_margin(reading, 566)) {
-    return "west north-west";
-  }
-  if (cmp_margin(reading, 481)) {
-    return "north north-west";
+float wind_direction_to_degrees(const uint8_t direction_idx) {
+  switch(direction_idx) {
+    // The 8 major directions first.
+    case 0:
+      // North.
+      return 0.0f;
+    case 1:
+      // North-east.
+      return 45.0f;
+    case 2:
+      // East.
+      return 90.0f;
+    case 3:
+      // South-east.
+      return 135.0f;
+    case 4:
+      // South.
+      return 180.0f;
+    case 5:
+      // South-west.
+      return 225.0f;
+    case 6:
+      // West.
+      return 270.0f;
+    case 7:
+      // North-west.
+      return 315.0f;
+  
+    // Then the 8 minor directions.
+    case 8:
+      // North north-east.
+      return 22.5f;
+    case 9:
+      // East north-east.
+      return 67.5f;
+    case 10:
+      // East south-east.
+      return 112.5f;
+    case 11:
+      // South south-east.
+      return 157.5f;
+    case 12:
+      // South south-west.
+      return 202.5f;
+    case 13:
+      // West south-west.
+      return 247.5f;
+    case 14:
+      // West north-west.
+      return 292.5f;
+    case 15:
+      // North north-west.
+      return 337.5f;
   }
 
+  // Invalid input.
+  return 255;
+}
+
+const char* wind_direction_to_text(const uint8_t direction_idx) {
+  // The 8 major directions first.
+  switch (direction_idx) {
+      case 0:
+        return "north";
+      case 1:
+        return "north-east";
+      case 2:
+        return "east";
+      case 3:
+        return "south-east";
+      case 4:
+        return "south";
+      case 5:
+        return "south-west";
+      case 6:
+        return "west";
+      case 7:
+        return "north-west";
+
+      // Then the 8 minor directions.
+      case 8:
+        return "north north-east";
+      case 9:
+        return "east north-east";
+      case 10:
+        return "east south-east";
+      case 11:
+        return "south south-east";
+      case 12:
+        return "south south-west";
+      case 13:
+        return "west south-west";
+      case 14:
+        return "west north-west";
+      case 15:
+        return "north north-west";
+  }
+
+  // Invalid input.
   return "error";
+}
+
+WindDirectionMeasurement::WindDirectionMeasurement() {
+  for (int i = 0; i < NUM_WIND_DIRECTIONS; ++i) {
+    directions_count[i] = 0;
+  }
+}
+
+void WindDirectionMeasurement::next_measurement() {
+  const uint8_t wind_direction_idx = get_wind_direction_now();
+  if (wind_direction_idx < NUM_WIND_DIRECTIONS) {
+    directions_count[wind_direction_idx]++;
+  }
+}
+
+uint8_t WindDirectionMeasurement::most_common_direction() const {
+  uint8_t most_common_direction = 255;
+  uint16_t most_common_count = 0;
+  for (int i = 0; i < NUM_WIND_DIRECTIONS; ++i) {
+    if (directions_count[i] > most_common_count) {
+      most_common_direction = i;
+      most_common_count = directions_count[i];
+    }
+  }
+  return most_common_direction;
 }

@@ -57,18 +57,13 @@ void initialize_rain() {
   interrupts();
 }
 
-
-void RainAmountMeasurement::start() {
-  initial_interrupts = get_rain_interrupt_count();
-}
-
-float RainAmountMeasurement::rain_amount() {
+float total_rain_mm() {
   const uint32_t now_interrupts = get_rain_interrupt_count();
 
   // The interrupt is called twice (not once) per every
   // 0.2794 mm (0.011") of rain that has fallen.
   const float rain_mm =
-    ((float)(now_interrupts - initial_interrupts)) * (0.5f * 0.2794f);
+    ((float)now_interrupts) * (0.5f * 0.2794f);
 
   return rain_mm;
 }
