@@ -62,6 +62,13 @@
         Olsztyn, Poland</a>
     </p>
   </article>
+
+  <article>
+    <img src="http://meteo.org.pl/img/ra.png" alt="Current radar map">
+    <p>
+      Current radar map for the country
+    </p>
+  </article>
 </section>
 
 %include footer
