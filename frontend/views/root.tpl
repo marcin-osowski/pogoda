@@ -44,6 +44,13 @@
 
       <tr><td colspan=2></td></tr>
 
+      <!-- Rain -->
+      % if rain_past_day is not None:
+          <tr><td>Rain in the last 24 hours:</td><td>{{ rain_past_day }} mm </td></tr>
+      % end
+
+      <tr><td colspan=2></td></tr>
+
       <!-- PM 2.5 -->
       % if pm_25 is not None:
           <tr><td>PM 2.5:</td><td>{{ pm_25 }} μg/m³ </td></tr>

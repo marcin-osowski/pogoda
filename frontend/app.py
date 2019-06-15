@@ -266,6 +266,20 @@ def compute_sun_radiation_power_series(sun_altitude_series):
     return output
 
 
+def align_cumulative_measure(input_series):
+    """Aligns the cumulative measure."""
+    output = []
+    to_add = 0.0
+    for i, (value, time) in enumerate(input_series):
+        if i > 0:
+            prev_value = input_series[i - 1][0]
+            if prev_value > value:
+                to_add += prev_value - value
+        output.append((value + to_add, time))
+
+    return output
+
+
 def date_to_seconds_ago(date):
     if date is None:
         return None
@@ -303,12 +317,24 @@ def root():
             db_access.get_latest_reading, client, config.GCP_WND_SPEED_KIND)
         wnd_dir_and_date = executor.submit(
             db_access.get_latest_reading, client, config.GCP_WND_DIR_KIND)
+        time_to = datetime.now(timezone.utc)
+        time_from = time_to - timedelta(days=1)
+        rain_history = executor.submit(
+            db_access.get_last_readings, client, config.GCP_RAIN_MM_KIND,
+            time_from, time_to)
         temp, temp_date = temp_and_date.result()
         hmdt, hmdt_date = hmdt_and_date.result()
         pres, pres_date = pres_and_date.result()
         pm_25, pm_25_date = pm_25_and_date.result()
         wnd_speed, wnd_speed_date = wnd_speed_and_date.result()
         wnd_dir, wnd_dir_date = wnd_dir_and_date.result()
+        rain_history = rain_history.result()
+
+    rain_history = align_cumulative_measure(rain_history)
+    if len(rain_history) < 2:
+        rain_past_day = None
+    else:
+        rain_past_day = rain_history[-1][0] - rain_history[0][0]
 
     dates = [temp_date, hmdt_date, pres_date, wnd_speed_date, wnd_dir_date]
     if None in dates:
@@ -339,6 +365,7 @@ def root():
         wnd_speed=wnd_speed,
         wnd_dir=wnd_dir,
         wnd_dir_text=wnd_dir_text,
+        rain_past_day=rain_past_day,
         data_age=data_age,
         latency=latency.total,
     ))

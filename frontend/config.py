@@ -13,6 +13,7 @@ GCP_PRES_KIND="wczasowa:ground_level:reading:pressure"
 GCP_PM25_KIND="wczasowa:ground_level:reading:pm_25_env"
 GCP_WND_SPEED_KIND="wczasowa:roof_level:reading:wind_speed"
 GCP_WND_DIR_KIND="wczasowa:roof_level:reading:wind_direction"
+GCP_RAIN_MM_KIND="wczasowa:roof_level:reading:total_rain_mm"
 
 # GCP kinds for connection status data.
 GCP_INTERNET_LATENCY="connection:internet_latency"
