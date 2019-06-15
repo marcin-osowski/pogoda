@@ -243,8 +243,12 @@ def date_to_seconds_ago(date):
 def degrees_to_direction_name(degrees):
     if degrees is None:
         return None
-    dirs = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE",
-            "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"]
+    dirs = [
+      "North", "North North-East", "North-East", "East North-East",
+      "East", "East South-East", "South-East", "South South-East",
+      "South", "South South-West", "South-West", "West South-West",
+      "West", "West North-West", "North-West", "North North-West",
+    ]
     ix = int((degrees + 11.25) / 22.5)
     return dirs[ix % 16]
 
