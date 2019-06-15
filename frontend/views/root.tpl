@@ -49,10 +49,17 @@
           <tr><td>PM 2.5:</td><td>{{ pm_25 }} μg/m³ </td></tr>
       % end
     </table>
-    <p>&nbsp;</p>
-    <p>&nbsp;</p>
+    <br/>
+    <br/>
     <p>Oldest data:
     {{ "%.0f seconds ago." % data_age if data_age is not None else "unknown." }}
+    </p>
+    <br/>
+    <p>
+      Location of the sensors:
+      <a href="https://google.com/maps?q=Olsztyn,Poland"
+         target="_blank">
+        Olsztyn, Poland</a>
     </p>
   </article>
 </section>
