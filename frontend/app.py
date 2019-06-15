@@ -364,7 +364,7 @@ def route_charts():
     dew_point_history = apply_smoothing(dew_point_history, minutes=30.1)
     pres_history = apply_smoothing(pres_history, minutes=20.1)
     pm_25_history = apply_smoothing(pm_25_history, minutes=40.1)
-    wnd_speed_history = apply_smoothing(wnd_speed_history, minutes=20.1)
+    wnd_speed_history = apply_smoothing(wnd_speed_history, minutes=40.1)
 
     # Insert gaps.
     temp_history = insert_gaps(temp_history, min_gap_minutes=20.1)
