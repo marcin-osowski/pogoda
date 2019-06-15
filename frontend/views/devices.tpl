@@ -25,6 +25,9 @@
                 minValue: new Date('{{ time_from.isoformat() }}'),
                 maxValue: new Date('{{ time_to.isoformat() }}'),
               },
+              vAxis: {
+                minValue: 0,
+              }
             };
 
             var chart = new google.visualization.LineChart(
