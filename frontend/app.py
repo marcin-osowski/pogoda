@@ -5,6 +5,7 @@ from collections import defaultdict
 from concurrent import futures
 from datetime import datetime, timezone, timedelta
 import math
+import pysolar
 import time
 
 import config
@@ -232,6 +233,38 @@ def compute_dew_point(vapor_pressure_history):
 
     return dew_point_history
 
+def compute_sun_altitude(time):
+    return pysolar.solar.get_altitude(
+        config.SITE_LATITUDE,
+        config.SITE_LONGITUDE,
+        time,
+    )
+
+
+def generate_sun_altitude_series(time_from, time_to, num_points=101):
+    """Generates a time series with sun's altitude."""
+    time_per_point = (time_to - time_from)/(num_points - 1)
+    series = []
+    for i in range(num_points):
+        point_time = time_from + (time_per_point * i)
+        sun_altitude = compute_sun_altitude(point_time)
+        series.append((sun_altitude, point_time))
+
+    return series
+
+
+def compute_sun_radiation_power_series(sun_altitude_series):
+    """Compute sun's radiation power using sun's altitude."""
+    output = []
+    for altitude, time in sun_altitude_series:
+        if altitude <= 0.0:
+            radiation = 0.0
+        else:
+            radiation = pysolar.radiation.get_radiation_direct(time, altitude)
+        output.append((radiation, time))
+
+    return output
+
 
 def date_to_seconds_ago(date):
     if date is None:
@@ -352,6 +385,10 @@ def route_charts():
         wnd_speed_history = wnd_speed_history.result()
         wnd_dir_history = wnd_dir_history.result()
 
+    # Compute sun's altitude and radiation power.
+    sun_altitude_computed = generate_sun_altitude_series(time_from, time_to)
+    sun_radiation_computed = compute_sun_radiation_power_series(sun_altitude_computed)
+
     # Vapor pressure and dew point are computed
     # from temperature and humidity.
     vapor_pres_history = compute_vapor_pressure(temp_history, hmdt_history)
@@ -397,11 +434,18 @@ def route_charts():
         name="wnd_speed", description="Wind speed [m/s]",
         history=wnd_speed_history))
     chart_datas.append(ChartData(
-        name="wnd_dir", description="Wind direction [degrees]",
+        name="wnd_dir", description="Wind direction [°]",
         history=wnd_dir_history))
     chart_datas.append(ChartData(
         name="pm_25", description="PM 2.5 [μg/m³]",
         history=pm_25_history))
+    chart_datas.append(ChartData(
+        name="sun_altitude", description="Computed altitude of the Sun [°]",
+        history=sun_altitude_computed))
+    chart_datas.append(ChartData(
+        name="sun_radiation_power",
+        description="Computed clear sky radiation power of the Sun [W/m²]",
+        history=sun_radiation_computed))
 
     return bottle.template("charts.tpl", dict(
         chart_datas=chart_datas,

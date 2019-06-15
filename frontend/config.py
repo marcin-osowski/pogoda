@@ -1,3 +1,7 @@
+# Site location
+SITE_LATITUDE=53.794847
+SITE_LONGITUDE=20.437800
+
 # Database settings.
 GCP_CREDENTIALS="./gcp-credentials.json"
 GCP_PROJECT="pogoda-240600"
