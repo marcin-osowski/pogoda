@@ -270,12 +270,13 @@ def align_cumulative_measure(input_series):
     """Aligns the cumulative measure."""
     output = []
     to_add = 0.0
-    for i, (value, time) in enumerate(input_series):
-        if i > 0:
-            prev_value = input_series[i - 1][0]
-            if prev_value > value:
-                to_add += prev_value - value
+    prev_value = 0.0
+    for value, time in input_series:
+        if prev_value > value:
+            # Value reset detected.
+            to_add += prev_value
         output.append((value + to_add, time))
+        prev_value = value
 
     return output
 
