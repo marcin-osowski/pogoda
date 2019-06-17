@@ -281,6 +281,38 @@ def align_cumulative_measure(input_series):
     return output
 
 
+def differentiate_cumulative_measure(input_series, time_from, time_to, num_buckets=100):
+    """Differentiates a cumulative measure into num_buckets buckets."""
+    if len(input_series) < 2:
+        return None
+
+    time_step = (time_to - time_from) / num_buckets
+    last_value = input_series[0][0]
+    i = 1
+    output = []
+    for step in range(num_buckets):
+        start_time = time_from + (time_step * (step))
+        mid_time = time_from + (time_step * (step + 0.5))
+        end_time = time_from + (time_step * (step + 1))
+        start_offset = i
+
+        # Find the first element that's after end_time.
+        while (i < len(input_series) and input_series[i][1] < end_time):
+            i += 1
+
+        end_offset = i
+
+        if start_offset == end_offset:
+            # No points in the range. Output a None value.
+            output.append((None, mid_time))
+        else:
+            value_in_bucket = input_series[i - 1][0] - last_value
+            last_value = input_series[i - 1][0]
+            output.append((value_in_bucket, mid_time))
+
+    return output
+
+
 def date_to_seconds_ago(date):
     if date is None:
         return None
@@ -304,6 +336,8 @@ def degrees_to_direction_name(degrees):
 @app.get("/")
 def root():
     latency = BackendLatencyTimer()
+    rain_time_to = datetime.now(timezone.utc)
+    rain_time_from = rain_time_to - timedelta(days=1)
     with latency:
         client = db_access.get_datastore_client()
         temp_and_date = executor.submit(
@@ -318,11 +352,9 @@ def root():
             db_access.get_latest_reading, client, config.GCP_WND_SPEED_KIND)
         wnd_dir_and_date = executor.submit(
             db_access.get_latest_reading, client, config.GCP_WND_DIR_KIND)
-        time_to = datetime.now(timezone.utc)
-        time_from = time_to - timedelta(days=1)
-        rain_history = executor.submit(
+        cumulative_rain_history = executor.submit(
             db_access.get_last_readings, client, config.GCP_RAIN_MM_KIND,
-            time_from, time_to)
+            rain_time_from, rain_time_to)
         temp, temp_date = temp_and_date.result()
         hmdt, hmdt_date = hmdt_and_date.result()
         pres, pres_date = pres_and_date.result()
@@ -331,11 +363,13 @@ def root():
         wnd_dir, wnd_dir_date = wnd_dir_and_date.result()
         rain_history = rain_history.result()
 
-    rain_history = align_cumulative_measure(rain_history)
-    if len(rain_history) < 2:
+    # Align cumulative measures.
+    cumulative_rain_history = align_cumulative_measure(cumulative_rain_history)
+
+    if len(cumulative_rain_history) < 2:
         rain_past_day = None
     else:
-        rain_past_day = rain_history[-1][0] - rain_history[0][0]
+        rain_past_day = cumulative_rain_history[-1][0] - cumulative_rain_history[0][0]
 
     dates = [temp_date, hmdt_date, pres_date, wnd_speed_date, wnd_dir_date]
     if None in dates:
@@ -375,10 +409,11 @@ def root():
 class ChartData(object):
     """A helper struct to hold chart data."""
 
-    def __init__(self, name, description, history):
+    def __init__(self, name, description, history, chart_type="LineChart"):
         self.name = name
         self.description = description
         self.history = history
+        self.chart_type = chart_type
 
 
 @app.get("/charts")
@@ -406,12 +441,23 @@ def route_charts():
         wnd_dir_history = executor.submit(
             db_access.get_last_readings, client, config.GCP_WND_DIR_KIND,
             time_from, time_to)
+        cumulative_rain_history = executor.submit(
+            db_access.get_last_readings, client, config.GCP_RAIN_MM_KIND,
+            time_from, time_to)
         temp_history = temp_history.result()
         hmdt_history = hmdt_history.result()
         pres_history = pres_history.result()
         pm_25_history = pm_25_history.result()
         wnd_speed_history = wnd_speed_history.result()
         wnd_dir_history = wnd_dir_history.result()
+        cumulative_rain_history = cumulative_rain_history.result()
+
+    # Align cumulative measures.
+    cumulative_rain_history = align_cumulative_measure(cumulative_rain_history)
+
+    # Differentiate rain history, for an area chart.
+    rain_history = differentiate_cumulative_measure(
+        cumulative_rain_history, time_from=time_from, time_to=time_to)
 
     # Compute sun's altitude and radiation power.
     sun_altitude_computed = generate_sun_altitude_series(time_from, time_to)
@@ -464,6 +510,9 @@ def route_charts():
     chart_datas.append(ChartData(
         name="wnd_dir", description="Wind direction [°]",
         history=wnd_dir_history))
+    chart_datas.append(ChartData(
+        name="rain_history", description="Rain [mm]",
+        history=rain_history, chart_type="SteppedAreaChart"))
     chart_datas.append(ChartData(
         name="pm_25", description="PM 2.5 [μg/m³]",
         history=pm_25_history))

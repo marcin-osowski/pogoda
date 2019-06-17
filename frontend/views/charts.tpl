@@ -26,7 +26,7 @@
           },
         };
 
-        var chart = new google.visualization.LineChart(
+        var chart = new google.visualization.{{ chart_data.chart_type }}(
             document.getElementById('{{ "%s_chart" % chart_data.name }}'));
         chart.draw(data, options);
     }
