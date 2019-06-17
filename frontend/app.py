@@ -361,7 +361,7 @@ def root():
         pm_25, pm_25_date = pm_25_and_date.result()
         wnd_speed, wnd_speed_date = wnd_speed_and_date.result()
         wnd_dir, wnd_dir_date = wnd_dir_and_date.result()
-        rain_history = rain_history.result()
+        cumulative_rain_history = cumulative_rain_history.result()
 
     # Align cumulative measures.
     cumulative_rain_history = align_cumulative_measure(cumulative_rain_history)
@@ -420,7 +420,7 @@ class ChartData(object):
 def route_charts():
     latency = BackendLatencyTimer()
     time_to = datetime.now(timezone.utc)
-    time_from = time_to - timedelta(days=1)
+    time_from = time_to - timedelta(days=2)
     with latency:
         client = db_access.get_datastore_client()
         temp_history = executor.submit(
@@ -536,7 +536,7 @@ def route_charts():
 def route_devices():
     latency = BackendLatencyTimer()
     time_to = datetime.now(timezone.utc)
-    time_from = time_to - timedelta(days=1)
+    time_from = time_to - timedelta(days=2)
     with latency:
         client = db_access.get_datastore_client()
         data_by_logger = dict()
