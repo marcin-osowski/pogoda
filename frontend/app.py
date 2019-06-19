@@ -510,9 +510,10 @@ def route_charts():
     chart_datas.append(ChartData(
         name="wnd_dir", description="Wind direction [°]",
         history=wnd_dir_history))
-    chart_datas.append(ChartData(
-        name="rain_history", description="Rain [mm]",
-        history=rain_history, chart_type="SteppedAreaChart"))
+    # Disabled.
+    #chart_datas.append(ChartData(
+    #    name="rain_history", description="Rain [mm]",
+    #    history=rain_history, chart_type="SteppedAreaChart"))
     chart_datas.append(ChartData(
         name="pm_25", description="PM 2.5 [μg/m³]",
         history=pm_25_history))
