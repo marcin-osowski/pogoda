@@ -407,13 +407,29 @@ def root():
 
 
 class ChartData(object):
-    """A helper struct to hold chart data."""
+    """A helper struct to hold chart data.
+
+    Stores a single time series."""
 
     def __init__(self, name, description, history, chart_type="LineChart"):
         self.name = name
         self.description = description
         self.history = history
         self.chart_type = chart_type
+
+class MultipleChartData(object):
+    """A helper struct to hold chart data.
+
+    Stores multiple time series."""
+
+    def __init__(self, name, description, chart_type="LineChart"):
+        self.name = name
+        self.description = description
+        self.chart_type = chart_type
+        self.series = []
+
+    def add_series(self, series_description, series):
+        self.series.append((series_description, series))
 
 
 @app.get("/charts")
@@ -579,37 +595,21 @@ def route_devices():
             datas[name] = insert_gaps(datas[name], min_gap_minutes=30.1)
 
     # Gather charts
-    charts_by_logger = []
-    for logger_name, (_, logger_description) in config.MONITORED_LOGGERS.items():
-        datas = data_by_logger[logger_name]
-        logger_charts = []
-        logger_charts.append(ChartData(
-            name=logger_name + "_db_latency",
-            description="Cloud DB write latency [ms]",
-            history=datas["db_latency"],
-        ))
-        logger_charts.append(ChartData(
-            name=logger_name + "db_success",
-            description="Cloud DB write success rate",
-            history=datas["db_success"],
-        ))
-        logger_charts.append(ChartData(
-            name=logger_name + "_arduino_bps",
-            description="Arduino comm output speed [bytes/sec]",
-            history=datas["arduino_bps"],
-        ))
-        logger_charts.append(ChartData(
-            name=logger_name + "_internet_latency",
-            description="Internet latency [ms]",
-            history=datas["latency"],
-        ))
-        charts_by_logger.append((logger_name, logger_description, logger_charts))
+    charts = []
+    def add_data(name, description):
+        chart_data = MultipleChartData(name=name, description=description)
+        for logger_name, (_, logger_description) in config.MONITORED_LOGGERS.items():
+            datas = data_by_logger[logger_name]
+            chart_data.add_series(logger_description, datas[name])
+        charts.append(chart_data)
 
-    # Sort to have predictable order of the charts.
-    charts_by_logger.sort()
+    add_data("db_latency", "Cloud DB write latency [ms]")
+    add_data("db_success", "Cloud DB write success rate")
+    add_data("arduino_bps", "Arduino comm output speed [bytes/sec]")
+    add_data("latency", "Internet latency [ms]")
 
     return bottle.template("devices.tpl", dict(
-        charts_by_logger=charts_by_logger,
+        charts=charts,
         time_from=time_from,
         time_to=time_to,
         latency=latency.total,
