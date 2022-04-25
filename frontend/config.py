@@ -24,7 +24,7 @@ GCP_ARDUINO_BPS="connection:arduino_comm_bps"
 # Names of monitored loggers
 MONITORED_LOGGERS={
     "ground_level": ("wczasowa:ground_level:", "Ground level"),
-    "roof_level": ("wczasowa:roof_level:", "Roof level"),
+    # "roof_level": ("wczasowa:roof_level:", "Roof level"),
 }
 
 # Web server settings.

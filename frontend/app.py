@@ -266,53 +266,6 @@ def compute_sun_radiation_power_series(sun_altitude_series):
     return output
 
 
-def align_cumulative_measure(input_series):
-    """Aligns the cumulative measure."""
-    output = []
-    to_add = 0.0
-    prev_value = 0.0
-    for value, time in input_series:
-        if prev_value > value:
-            # Value reset detected.
-            to_add += prev_value
-        output.append((value + to_add, time))
-        prev_value = value
-
-    return output
-
-
-def differentiate_cumulative_measure(input_series, time_from, time_to, num_buckets=100):
-    """Differentiates a cumulative measure into num_buckets buckets."""
-    if len(input_series) < 2:
-        return None
-
-    time_step = (time_to - time_from) / num_buckets
-    last_value = input_series[0][0]
-    i = 1
-    output = []
-    for step in range(num_buckets):
-        start_time = time_from + (time_step * (step))
-        mid_time = time_from + (time_step * (step + 0.5))
-        end_time = time_from + (time_step * (step + 1))
-        start_offset = i
-
-        # Find the first element that's after end_time.
-        while (i < len(input_series) and input_series[i][1] < end_time):
-            i += 1
-
-        end_offset = i
-
-        if start_offset == end_offset:
-            # No points in the range. Output a None value.
-            output.append((None, mid_time))
-        else:
-            value_in_bucket = input_series[i - 1][0] - last_value
-            last_value = input_series[i - 1][0]
-            output.append((value_in_bucket, mid_time))
-
-    return output
-
-
 def date_to_seconds_ago(date):
     if date is None:
         return None
@@ -348,30 +301,12 @@ def root():
             db_access.get_latest_reading, client, config.GCP_PRES_KIND)
         pm_25_and_date = executor.submit(
             db_access.get_latest_reading, client, config.GCP_PM25_KIND)
-        wnd_speed_and_date = executor.submit(
-            db_access.get_latest_reading, client, config.GCP_WND_SPEED_KIND)
-        wnd_dir_and_date = executor.submit(
-            db_access.get_latest_reading, client, config.GCP_WND_DIR_KIND)
-        cumulative_rain_history = executor.submit(
-            db_access.get_last_readings, client, config.GCP_RAIN_MM_KIND,
-            rain_time_from, rain_time_to)
         temp, temp_date = temp_and_date.result()
         hmdt, hmdt_date = hmdt_and_date.result()
         pres, pres_date = pres_and_date.result()
         pm_25, pm_25_date = pm_25_and_date.result()
-        wnd_speed, wnd_speed_date = wnd_speed_and_date.result()
-        wnd_dir, wnd_dir_date = wnd_dir_and_date.result()
-        cumulative_rain_history = cumulative_rain_history.result()
 
-    # Align cumulative measures.
-    cumulative_rain_history = align_cumulative_measure(cumulative_rain_history)
-
-    if len(cumulative_rain_history) < 2:
-        rain_past_day = None
-    else:
-        rain_past_day = cumulative_rain_history[-1][0] - cumulative_rain_history[0][0]
-
-    dates = [temp_date, hmdt_date, pres_date, wnd_speed_date, wnd_dir_date]
+    dates = [temp_date, hmdt_date, pres_date]
     if None in dates:
         data_age = None
     else:
@@ -388,8 +323,6 @@ def root():
         vapor_pres = hmdt_and_temp.vapor_pressure()
         dew_point = dew_point_from_vapor_pressure(vapor_pres)
 
-    wnd_dir_text = degrees_to_direction_name(wnd_dir)
-
     return bottle.template("root.tpl", dict(
         temp=temp,
         hmdt=hmdt,
@@ -397,10 +330,6 @@ def root():
         dew_point=dew_point,
         pres=pres,
         pm_25=pm_25,
-        wnd_speed=wnd_speed,
-        wnd_dir=wnd_dir,
-        wnd_dir_text=wnd_dir_text,
-        rain_past_day=rain_past_day,
         data_age=data_age,
         latency=latency.total,
     ))
@@ -451,29 +380,11 @@ def route_charts():
         pm_25_history = executor.submit(
             db_access.get_last_readings, client, config.GCP_PM25_KIND,
             time_from, time_to)
-        wnd_speed_history = executor.submit(
-            db_access.get_last_readings, client, config.GCP_WND_SPEED_KIND,
-            time_from, time_to)
-        wnd_dir_history = executor.submit(
-            db_access.get_last_readings, client, config.GCP_WND_DIR_KIND,
-            time_from, time_to)
-        cumulative_rain_history = executor.submit(
-            db_access.get_last_readings, client, config.GCP_RAIN_MM_KIND,
-            time_from, time_to)
         temp_history = temp_history.result()
         hmdt_history = hmdt_history.result()
         pres_history = pres_history.result()
         pm_25_history = pm_25_history.result()
-        wnd_speed_history = wnd_speed_history.result()
-        wnd_dir_history = wnd_dir_history.result()
-        cumulative_rain_history = cumulative_rain_history.result()
 
-    # Align cumulative measures.
-    cumulative_rain_history = align_cumulative_measure(cumulative_rain_history)
-
-    # Differentiate rain history, for an area chart.
-    rain_history = differentiate_cumulative_measure(
-        cumulative_rain_history, time_from=time_from, time_to=time_to)
 
     # Compute sun's altitude and radiation power.
     sun_altitude_computed = generate_sun_altitude_series(time_from, time_to)
@@ -491,7 +402,6 @@ def route_charts():
     dew_point_history = apply_smoothing(dew_point_history, minutes=30.1)
     pres_history = apply_smoothing(pres_history, minutes=20.1)
     pm_25_history = apply_smoothing(pm_25_history, minutes=40.1)
-    wnd_speed_history = apply_smoothing(wnd_speed_history, minutes=20.1)
 
     # Insert gaps.
     temp_history = insert_gaps(temp_history, min_gap_minutes=20.1)
@@ -500,8 +410,6 @@ def route_charts():
     dew_point_history = insert_gaps(dew_point_history, min_gap_minutes=20.1)
     pres_history = insert_gaps(pres_history, min_gap_minutes=20.1)
     pm_25_history = insert_gaps(pm_25_history, min_gap_minutes=20.1)
-    wnd_speed_history = insert_gaps(wnd_speed_history, min_gap_minutes=20.1)
-    wnd_dir_history = insert_gaps(wnd_dir_history, min_gap_minutes=20.1)
 
     # Wrap it together in a single list.
     chart_datas = []
@@ -520,16 +428,6 @@ def route_charts():
     chart_datas.append(ChartData(
         name="pres", description="Pressure [hPa]",
         history=pres_history))
-    chart_datas.append(ChartData(
-        name="wnd_speed", description="Wind speed [m/s]",
-        history=wnd_speed_history))
-    chart_datas.append(ChartData(
-        name="wnd_dir", description="Wind direction [°]",
-        history=wnd_dir_history))
-    # Disabled.
-    #chart_datas.append(ChartData(
-    #    name="rain_history", description="Rain [mm]",
-    #    history=rain_history, chart_type="SteppedAreaChart"))
     chart_datas.append(ChartData(
         name="pm_25", description="PM 2.5 [μg/m³]",
         history=pm_25_history))

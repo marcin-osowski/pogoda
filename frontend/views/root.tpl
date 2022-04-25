@@ -39,27 +39,7 @@
 
       <tr><td colspan=2></td></tr>
 
-      <!-- Wind -->
-      % if wnd_speed is not None:
-          <tr><td>Wind speed:</td>
-              <td>{{ wnd_speed }} m/s </td></tr>
-      % end
-      % if wnd_dir is not None:
-          <tr><td>Wind direction:</td>
-              <td>{{ wnd_dir_text }} ({{ wnd_dir }}°)</td></tr>
-      % end
-
       <tr><td colspan=2></td></tr>
-
-      <!-- Rain -->
-      <!-- Sensor broken - disabled.
-      % if rain_past_day is not None:
-          <tr><td>Rain in the last 24 hours:</td>
-              <td>{{ "%.2f" % rain_past_day }} mm </td></tr>
-      % end
-
-      <tr><td colspan=2></td></tr>
-      -->
 
       <!-- PM 2.5 -->
       % if pm_25 is not None:
@@ -81,7 +61,7 @@
   </article>
 
   <article>
-    <img src="http://meteo.org.pl/img/ra.png" alt="Current radar map">
+    <img src="https://meteo.org.pl/img/ra.png" referrerpolicy="no-referrer" alt="Current radar map">
     <p>
       Current radar map for the country
     </p>
