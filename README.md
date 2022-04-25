@@ -8,10 +8,7 @@ Frontend: https://pogoda.osowski.info
    periodically writes sensor data to the serial output (C++).
    Located at ground level (around 1 meter above the ground).
    Sensors: temperature, humidity, air pressure, air quality.
-2. `arduino_roof/`: an Arduino Nano board connected to sensors,
-   periodically writes sensor data to the serial output (C++).
-   Located at roof level.
-   Sensors: wind direction and speed, rain mm.
+2. `arduino_roof/`: obsolete
 3. `logger/`: a Raspberry Pi, connected to the Arduino via USB,
    reads this data and pushes it to a Google Cloud Datastore
    database (Python).
