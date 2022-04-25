@@ -13,8 +13,6 @@
               <td>{{ temp }} °C</td></tr>
       % end
 
-      <tr><td colspan=2></td></tr>
-
       <!-- Humidity -->
       % if hmdt is not None:
           <tr><td>Humidity:</td>
@@ -29,17 +27,11 @@
               <td>{{ "%.1f" % dew_point }} °C</td></tr>
       % end
 
-      <tr><td colspan=2></td></tr>
-
       <!-- Pressure -->
       % if pres is not None:
           <tr><td>Pressure:</td>
               <td>{{ pres }} hPa</td></tr>
       % end
-
-      <tr><td colspan=2></td></tr>
-
-      <tr><td colspan=2></td></tr>
 
       <!-- PM 2.5 -->
       % if pm_25 is not None:
