@@ -41,7 +41,7 @@
     <br/>
     <br/>
     <p>Oldest data:
-    {{ "%.0f seconds ago." % data_age if data_age is not None else "unknown." }}
+    {{ data_age if data_age is not None else "unknown." }}
     </p>
     <br/>
     <p>

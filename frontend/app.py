@@ -311,7 +311,15 @@ def root():
         data_age = None
     else:
         agos = map(date_to_seconds_ago, dates)
-        data_age = max(agos)
+        data_age_seconds = max(agos)
+        if data_age_seconds < 60.0:
+          data_age = "%.1f seconds ago" % data_age_seconds
+        elif data_age_seconds < 60.0 * 60.0:
+          data_age = "%.1f minutes ago" % (data_age_seconds / 60.0)
+        elif data_age_seconds < 24.0 * 60.0 * 60.0:
+          data_age = "%.1f hours ago" % (data_age_seconds / 60.0 / 60.0)
+        else:
+          data_age = "%.1f days ago" % (data_age_seconds / 60.0 / 60.0 / 24.0)
 
     if None in [hmdt, temp]:
         vapor_pres = None
