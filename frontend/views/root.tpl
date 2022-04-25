@@ -55,7 +55,7 @@
   <article>
     <img src="https://meteo.org.pl/img/ra.png" referrerpolicy="no-referrer" alt="Current radar map">
     <p>
-      Current radar map for the country
+      Current radar map for the country, from <a href="https://meteo.org.pl/">https://meteo.org.pl/</a>.
     </p>
   </article>
 </section>
