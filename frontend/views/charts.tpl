@@ -12,7 +12,7 @@
           ['Time', '{{ chart_data.description }}'],
           % for row in chart_data.history:
             [new Date('{{ row[1].isoformat() }}'),
-             {{ row[0] if row[0] is not None else "null" }}],
+             {{ ("%.5f" % row[0]) if row[0] is not None else "null" }}],
           % end
         ]);
 
